@@ -14,6 +14,20 @@ const esEdicion = computed(() => !!props.usuario)
 const enviando = ref(false)
 const mensajeError = ref('')
 
+const errores = ref({
+  ci: '',
+  primer_nombre: '',
+  segundo_nombre: '',
+  apellido_paterno: '',
+  apellido_materno: '',
+  fecha_nacimiento: '',
+  telefono: '',
+  cargo: '',
+  username: '',
+  password: '',
+  id_rol: '',
+})
+
 const form = ref({
   ci: props.usuario?.ci || '',
   primer_nombre: props.usuario?.primer_nombre || '',
@@ -28,8 +42,72 @@ const form = ref({
   id_rol: props.usuario?.id_rol || '',
 })
 
+function limpiarErrores() {
+  for (const k in errores.value) {
+    errores.value[k] = ''
+  }
+}
+
+function validar() {
+  let ok = true
+  limpiarErrores()
+
+  if (!form.value.ci) {
+    errores.value.ci = 'La cédula de identidad es requerida'
+    ok = false
+  } else if (!/^\d+$/.test(form.value.ci)) {
+    errores.value.ci = 'Debe contener solo números'
+    ok = false
+  } else if (form.value.ci.length < 5 || form.value.ci.length > 9) {
+    errores.value.ci = 'Debe tener entre 5 y 9 dígitos'
+    ok = false
+  }
+
+  if (form.value.primer_nombre.length < 2) {
+    errores.value.primer_nombre = 'Mínimo 2 caracteres'
+    ok = false
+  }
+
+  if (form.value.apellido_paterno.length < 2) {
+    errores.value.apellido_paterno = 'Mínimo 2 caracteres'
+    ok = false
+  }
+
+  if (form.value.telefono && !/^\d{8}$/.test(form.value.telefono)) {
+    errores.value.telefono = 'Debe tener 8 dígitos'
+    ok = false
+  }
+
+  if (form.value.cargo.length < 2) {
+    errores.value.cargo = 'Mínimo 2 caracteres'
+    ok = false
+  }
+
+  if (form.value.username.length < 3) {
+    errores.value.username = 'Mínimo 3 caracteres'
+    ok = false
+  }
+
+  if (!esEdicion.value && form.value.password.length < 6) {
+    errores.value.password = 'Mínimo 6 caracteres'
+    ok = false
+  }
+  if (esEdicion.value && form.value.password && form.value.password.length < 6) {
+    errores.value.password = 'Mínimo 6 caracteres'
+    ok = false
+  }
+
+  if (!form.value.id_rol) {
+    errores.value.id_rol = 'Debe seleccionar un rol'
+    ok = false
+  }
+
+  return ok
+}
+
 async function guardar() {
   mensajeError.value = ''
+  if (!validar()) return
   enviando.value = true
 
   try {
@@ -63,37 +141,45 @@ async function guardar() {
         <fieldset>
           <legend>Datos Personales</legend>
           <div class="form-grid">
-            <div class="campo">
+            <div class="campo" :class="{ 'has-error': errores.ci }">
               <label for="ci">C&eacute;dula de Identidad</label>
               <input id="ci" v-model="form.ci" type="text" required />
+              <p v-if="errores.ci" class="field-error">{{ errores.ci }}</p>
             </div>
-            <div class="campo">
+            <div class="campo" :class="{ 'has-error': errores.primer_nombre }">
               <label for="primer_nombre">Primer Nombre</label>
               <input id="primer_nombre" v-model="form.primer_nombre" type="text" required />
+              <p v-if="errores.primer_nombre" class="field-error">{{ errores.primer_nombre }}</p>
             </div>
-            <div class="campo">
+            <div class="campo" :class="{ 'has-error': errores.segundo_nombre }">
               <label for="segundo_nombre">Segundo Nombre</label>
               <input id="segundo_nombre" v-model="form.segundo_nombre" type="text" />
+              <p v-if="errores.segundo_nombre" class="field-error">{{ errores.segundo_nombre }}</p>
             </div>
-            <div class="campo">
+            <div class="campo" :class="{ 'has-error': errores.apellido_paterno }">
               <label for="apellido_paterno">Apellido Paterno</label>
               <input id="apellido_paterno" v-model="form.apellido_paterno" type="text" required />
+              <p v-if="errores.apellido_paterno" class="field-error">{{ errores.apellido_paterno }}</p>
             </div>
-            <div class="campo">
+            <div class="campo" :class="{ 'has-error': errores.apellido_materno }">
               <label for="apellido_materno">Apellido Materno</label>
               <input id="apellido_materno" v-model="form.apellido_materno" type="text" />
+              <p v-if="errores.apellido_materno" class="field-error">{{ errores.apellido_materno }}</p>
             </div>
-            <div class="campo">
+            <div class="campo" :class="{ 'has-error': errores.fecha_nacimiento }">
               <label for="fecha_nacimiento">Fecha de Nacimiento</label>
               <input id="fecha_nacimiento" v-model="form.fecha_nacimiento" type="date" />
+              <p v-if="errores.fecha_nacimiento" class="field-error">{{ errores.fecha_nacimiento }}</p>
             </div>
-            <div class="campo">
+            <div class="campo" :class="{ 'has-error': errores.telefono }">
               <label for="telefono">Tel&eacute;fono</label>
               <input id="telefono" v-model="form.telefono" type="text" />
+              <p v-if="errores.telefono" class="field-error">{{ errores.telefono }}</p>
             </div>
-            <div class="campo">
+            <div class="campo" :class="{ 'has-error': errores.cargo }">
               <label for="cargo">Cargo</label>
               <input id="cargo" v-model="form.cargo" type="text" required />
+              <p v-if="errores.cargo" class="field-error">{{ errores.cargo }}</p>
             </div>
           </div>
         </fieldset>
@@ -101,17 +187,19 @@ async function guardar() {
         <fieldset>
           <legend>Datos de Acceso</legend>
           <div class="form-grid">
-            <div class="campo">
+            <div class="campo" :class="{ 'has-error': errores.username }">
               <label for="username">Usuario</label>
               <input id="username" v-model="form.username" type="text" required />
+              <p v-if="errores.username" class="field-error">{{ errores.username }}</p>
             </div>
-            <div class="campo">
+            <div class="campo" :class="{ 'has-error': errores.password }">
               <label for="password">
                 {{ esEdicion ? 'Nueva Contrase&ntilde;a (dejar vac&iacute;o para mantener)' : 'Contrase&ntilde;a' }}
               </label>
               <input id="password" v-model="form.password" type="password" :required="!esEdicion" />
+              <p v-if="errores.password" class="field-error">{{ errores.password }}</p>
             </div>
-            <div class="campo">
+            <div class="campo" :class="{ 'has-error': errores.id_rol }">
               <label for="id_rol">Rol</label>
               <select id="id_rol" v-model="form.id_rol" required>
                 <option value="" disabled>Seleccionar rol</option>
@@ -119,6 +207,7 @@ async function guardar() {
                   {{ r.nombre }}
                 </option>
               </select>
+              <p v-if="errores.id_rol" class="field-error">{{ errores.id_rol }}</p>
             </div>
           </div>
         </fieldset>
@@ -224,10 +313,6 @@ legend {
   gap: 4px;
 }
 
-.campo.full {
-  grid-column: 1 / -1;
-}
-
 .campo label {
   font-size: 13px;
   font-weight: 500;
@@ -250,6 +335,22 @@ legend {
 .campo select:focus {
   border-color: #042D29;
   box-shadow: 0 0 0 3px rgba(4, 45, 41, 0.1);
+}
+
+.campo.has-error input,
+.campo.has-error select {
+  border-color: #741102;
+}
+
+.campo.has-error input:focus,
+.campo.has-error select:focus {
+  box-shadow: 0 0 0 3px rgba(116, 17, 2, 0.1);
+}
+
+.field-error {
+  font-size: 11px;
+  color: #741102;
+  margin-top: 1px;
 }
 
 .modal-footer {

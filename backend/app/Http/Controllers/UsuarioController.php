@@ -45,17 +45,28 @@ class UsuarioController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'ci' => 'required|string|max:255',
-            'primer_nombre' => 'required|string|max:255',
+            'ci' => 'required|string|min:5|max:9|regex:/^\d+$/|unique:TPersonas,ci',
+            'primer_nombre' => 'required|string|min:2|max:255',
             'segundo_nombre' => 'nullable|string|max:255',
-            'apellido_paterno' => 'required|string|max:255',
+            'apellido_paterno' => 'required|string|min:2|max:255',
             'apellido_materno' => 'nullable|string|max:255',
-            'fecha_nacimiento' => 'nullable|date',
-            'telefono' => 'nullable|string|max:255',
-            'cargo' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:TUsuarios,username',
+            'fecha_nacimiento' => 'nullable|date|before:today',
+            'telefono' => 'nullable|string|regex:/^\d{8}$/',
+            'cargo' => 'required|string|min:2|max:255',
+            'username' => 'required|string|min:3|max:255|unique:TUsuarios,username',
             'password' => 'required|string|min:6',
             'id_rol' => 'required|exists:TRoles,id_rol',
+        ], [
+            'ci.regex' => 'La cédula de identidad debe contener solo números',
+            'ci.unique' => 'Esta cédula de identidad ya está registrada',
+            'ci.min' => 'La cédula debe tener al menos 5 dígitos',
+            'ci.max' => 'La cédula debe tener máximo 9 dígitos',
+            'telefono.regex' => 'El teléfono debe tener 8 dígitos',
+            'fecha_nacimiento.before' => 'La fecha de nacimiento no puede ser futura',
+            'primer_nombre.min' => 'El primer nombre debe tener al menos 2 caracteres',
+            'apellido_paterno.min' => 'El apellido paterno debe tener al menos 2 caracteres',
+            'cargo.min' => 'El cargo debe tener al menos 2 caracteres',
+            'username.min' => 'El usuario debe tener al menos 3 caracteres',
         ]);
 
         $usuarioId = auth()->id();
@@ -134,20 +145,32 @@ class UsuarioController extends Controller
 
     public function update(Request $request, $id)
     {
-        $user = User::findOrFail($id);
+        $user = User::with('empleado.persona')->findOrFail($id);
+        $personaId = $user->empleado?->persona?->id_persona;
 
         $validated = $request->validate([
-            'ci' => 'sometimes|string|max:255',
-            'primer_nombre' => 'sometimes|string|max:255',
+            'ci' => 'sometimes|string|min:5|max:9|regex:/^\d+$/|unique:TPersonas,ci,' . $personaId . ',id_persona',
+            'primer_nombre' => 'sometimes|string|min:2|max:255',
             'segundo_nombre' => 'nullable|string|max:255',
-            'apellido_paterno' => 'sometimes|string|max:255',
+            'apellido_paterno' => 'sometimes|string|min:2|max:255',
             'apellido_materno' => 'nullable|string|max:255',
-            'fecha_nacimiento' => 'nullable|date',
-            'telefono' => 'nullable|string|max:255',
-            'cargo' => 'sometimes|string|max:255',
-            'username' => 'sometimes|string|max:255|unique:TUsuarios,username,' . $id . ',id_usuario',
+            'fecha_nacimiento' => 'nullable|date|before:today',
+            'telefono' => 'nullable|string|regex:/^\d{8}$/',
+            'cargo' => 'sometimes|string|min:2|max:255',
+            'username' => 'sometimes|string|min:3|max:255|unique:TUsuarios,username,' . $id . ',id_usuario',
             'password' => 'nullable|string|min:6',
             'id_rol' => 'sometimes|exists:TRoles,id_rol',
+        ], [
+            'ci.regex' => 'La cédula de identidad debe contener solo números',
+            'ci.unique' => 'Esta cédula de identidad ya está registrada',
+            'ci.min' => 'La cédula debe tener al menos 5 dígitos',
+            'ci.max' => 'La cédula debe tener máximo 9 dígitos',
+            'telefono.regex' => 'El teléfono debe tener 8 dígitos',
+            'fecha_nacimiento.before' => 'La fecha de nacimiento no puede ser futura',
+            'primer_nombre.min' => 'El primer nombre debe tener al menos 2 caracteres',
+            'apellido_paterno.min' => 'El apellido paterno debe tener al menos 2 caracteres',
+            'cargo.min' => 'El cargo debe tener al menos 2 caracteres',
+            'username.min' => 'El usuario debe tener al menos 3 caracteres',
         ]);
 
         $usuarioId = auth()->id();
