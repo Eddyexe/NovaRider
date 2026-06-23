@@ -12,7 +12,7 @@ class CheckRole
     {
         $user = $request->user();
 
-        if (!$user || !in_array((string) $user->id_rol, $roles, true)) {
+        if (!$user || !$user->roles()->whereIn('TRoles.id_rol', $roles)->exists()) {
             return response()->json(['message' => 'No tienes permiso para acceder a este recurso'], 403);
         }
 

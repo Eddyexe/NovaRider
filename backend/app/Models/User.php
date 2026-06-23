@@ -17,7 +17,6 @@ class User extends Authenticatable
         'username',
         'password_hash',
         'id_empleado',
-        'id_rol',
         'estadoA',
         'usuarioA',
         'fechahoraA',
@@ -42,9 +41,9 @@ class User extends Authenticatable
         return 'username';
     }
 
-    public function rol()
+    public function roles()
     {
-        return $this->belongsTo(Rol::class, 'id_rol');
+        return $this->belongsToMany(Rol::class, 'TUsuarioRol', 'id_usuario', 'id_rol');
     }
 
     public function empleado()

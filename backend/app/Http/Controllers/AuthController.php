@@ -120,13 +120,17 @@ class AuthController extends Controller
 
     private function cargarUsuario(User $user)
     {
-        $user->load('rol');
+        $user->load('roles');
+
+        $rolesUsuario = $user->roles;
+        $rolesIds = $rolesUsuario->pluck('id_rol')->toArray();
+        $rolesNombres = $rolesUsuario->pluck('nombre')->implode(', ');
 
         $usuario = [
             'id_usuario' => $user->id_usuario,
             'username' => $user->username,
-            'id_rol' => $user->id_rol,
-            'rol' => $user->rol ? $user->rol->nombre : null,
+            'roles' => $rolesUsuario->toArray(),
+            'rol' => $rolesNombres,
             'id_empleado' => $user->id_empleado,
             'estadoA' => $user->estadoA,
         ];
@@ -182,8 +186,8 @@ class AuthController extends Controller
             ],
         ];
 
-        $usuario['modulos'] = array_values(array_filter($modulos, function ($m) use ($user) {
-            return in_array($user->id_rol, $m['roles_permitidos']);
+        $usuario['modulos'] = array_values(array_filter($modulos, function ($m) use ($rolesIds) {
+            return !empty(array_intersect($rolesIds, $m['roles_permitidos']));
         }));
 
         return $usuario;

@@ -25,7 +25,7 @@ class Rol extends Model
 
     public function usuarios()
     {
-        return $this->hasMany(User::class, 'id_rol');
+        return $this->belongsToMany(User::class, 'TUsuarioRol', 'id_rol', 'id_usuario');
     }
 
     public function scopeActivos($query)

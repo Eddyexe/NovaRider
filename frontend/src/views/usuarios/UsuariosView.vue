@@ -31,7 +31,7 @@ function animarEntrada() {
 const usuariosFiltrados = computed(() => {
   let lista = store.usuarios
   if (filtroRol.value) {
-    lista = lista.filter(u => u.id_rol === Number(filtroRol.value))
+    lista = lista.filter(u => u.roles?.some(r => r.id_rol === Number(filtroRol.value)))
   }
   if (busqueda.value) {
     const q = busqueda.value.toLowerCase()
@@ -198,9 +198,16 @@ async function reactivarUsuario(id) {
               <td class="col-user">{{ u.username }}</td>
               <td class="col-ci">{{ u.ci || '—' }}</td>
               <td class="col-rol">
-                <span class="badge-rol" :class="'rol-' + (u.rol || '').toLowerCase()">
-                  {{ u.rol }}
-                </span>
+                <div class="roles-wrap">
+                  <span
+                    v-for="r in (u.roles || [])"
+                    :key="r.id_rol"
+                    class="badge-rol"
+                    :class="'rol-' + (r.nombre || '').toLowerCase()"
+                  >
+                    {{ r.nombre }}
+                  </span>
+                </div>
               </td>
               <td class="col-acc">
                 <button class="btn-accion btn-editar" @click="editarUsuario(u)" title="Editar">
@@ -512,7 +519,7 @@ async function reactivarUsuario(id) {
 .col-emp { min-width: 180px; }
 .col-user { min-width: 120px; }
 .col-ci { min-width: 130px; }
-.col-rol { width: 120px; }
+.col-rol { min-width: 140px; }
 .col-acc { width: 100px; text-align: right; }
 
 .emp-nombre {
@@ -541,6 +548,12 @@ async function reactivarUsuario(id) {
 .rol-mecanico { background: rgba(4, 45, 41, 0.12); color: #042D29; }
 .rol-recepcionista { background: rgba(146, 144, 121, 0.1); color: #5C5B4E; }
 .badge-rol.inactivo { background: #F3F4F6; color: #9CA3AF; }
+
+.roles-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
 
 /* ── Action buttons ── */
 .col-acc {

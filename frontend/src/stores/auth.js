@@ -19,8 +19,8 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function tieneRol(...roles) {
-    if (!user.value) return false
-    return roles.includes(user.value.id_rol)
+    if (!user.value || !user.value.roles) return false
+    return user.value.roles.some(r => roles.includes(r.id_rol))
   }
 
   async function login(username, password) {

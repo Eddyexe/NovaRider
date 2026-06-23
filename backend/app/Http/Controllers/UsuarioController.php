@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Empleado;
-use App\Models\Persona;
 use App\Models\Rol;
 use App\Models\User;
 use App\Traits\AuditoriaTrait;
@@ -19,7 +18,7 @@ class UsuarioController extends Controller
     {
         $inactivos = $request->boolean('inactivos');
 
-        $query = User::with('empleado.persona', 'rol')
+        $query = User::with('empleado', 'roles')
             ->orderBy('id_usuario');
 
         if ($inactivos) {
@@ -37,7 +36,7 @@ class UsuarioController extends Controller
 
     public function show($id)
     {
-        $user = User::with('empleado.persona', 'rol')->findOrFail($id);
+        $user = User::with('empleado', 'roles')->findOrFail($id);
 
         return response()->json(['usuario' => $this->formatearUsuario($user)]);
     }
@@ -45,7 +44,7 @@ class UsuarioController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'ci' => 'required|string|min:5|max:9|regex:/^\d+$/|unique:TPersonas,ci',
+            'ci' => 'required|string|min:5|max:9|regex:/^\d+$/|unique:TEmpleados,ci',
             'primer_nombre' => 'required|string|min:2|max:255',
             'segundo_nombre' => 'nullable|string|max:255',
             'apellido_paterno' => 'required|string|min:2|max:255',
@@ -55,7 +54,8 @@ class UsuarioController extends Controller
             'cargo' => 'required|string|min:2|max:255',
             'username' => 'required|string|min:3|max:255|unique:TUsuarios,username',
             'password' => 'required|string|min:6',
-            'id_rol' => 'required|exists:TRoles,id_rol',
+            'roles' => 'required|array',
+            'roles.*' => 'exists:TRoles,id_rol',
         ], [
             'ci.regex' => 'La cédula de identidad debe contener solo números',
             'ci.unique' => 'Esta cédula de identidad ya está registrada',
@@ -74,7 +74,7 @@ class UsuarioController extends Controller
         try {
             DB::beginTransaction();
 
-            $persona = Persona::create([
+            $empleado = Empleado::create([
                 'ci' => $validated['ci'],
                 'primer_nombre' => $validated['primer_nombre'],
                 'segundo_nombre' => $validated['segundo_nombre'],
@@ -82,24 +82,6 @@ class UsuarioController extends Controller
                 'apellido_materno' => $validated['apellido_materno'],
                 'fecha_nacimiento' => $validated['fecha_nacimiento'],
                 'telefono' => $validated['telefono'],
-                'estadoA' => true,
-                'usuarioA' => $usuarioId,
-                'fechahoraA' => now(),
-            ]);
-
-            $valoresPersona = implode('|', [
-                $validated['ci'],
-                $validated['primer_nombre'],
-                $validated['segundo_nombre'] ?? '',
-                $validated['apellido_paterno'],
-                $validated['apellido_materno'] ?? '',
-                $validated['fecha_nacimiento'] ?? '',
-                $validated['telefono'] ?? '',
-            ]);
-            $this->registrarAuditoria('TPersonas', $persona->id_persona, 'I', null, null, $valoresPersona, 'Creacion de persona para nuevo usuario');
-
-            $empleado = Empleado::create([
-                'id_persona' => $persona->id_persona,
                 'fecha_ingreso' => now()->toDateString(),
                 'sueldo_base' => 0,
                 'cargo' => $validated['cargo'],
@@ -109,6 +91,13 @@ class UsuarioController extends Controller
             ]);
 
             $valoresEmpleado = implode('|', [
+                $validated['ci'],
+                $validated['primer_nombre'],
+                $validated['segundo_nombre'] ?? '',
+                $validated['apellido_paterno'],
+                $validated['apellido_materno'] ?? '',
+                $validated['fecha_nacimiento'] ?? '',
+                $validated['telefono'] ?? '',
                 $validated['cargo'],
                 now()->toDateString(),
                 '0',
@@ -119,15 +108,16 @@ class UsuarioController extends Controller
                 'username' => $validated['username'],
                 'password_hash' => Hash::make($validated['password']),
                 'id_empleado' => $empleado->id_empleado,
-                'id_rol' => $validated['id_rol'],
                 'estadoA' => true,
                 'usuarioA' => $usuarioId,
                 'fechahoraA' => now(),
             ]);
 
+            $user->roles()->attach($validated['roles']);
+
             $valoresUsuario = implode('|', [
                 $validated['username'],
-                (string) $validated['id_rol'],
+                implode(',', $validated['roles']),
             ]);
             $this->registrarAuditoria('TUsuarios', $user->id_usuario, 'I', null, null, $valoresUsuario, 'Creacion de usuario');
 
@@ -135,7 +125,7 @@ class UsuarioController extends Controller
 
             return response()->json([
                 'message' => 'Usuario creado exitosamente',
-                'usuario' => $this->formatearUsuario($user->load('empleado.persona', 'rol')),
+                'usuario' => $this->formatearUsuario($user->load('empleado', 'roles')),
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -145,11 +135,11 @@ class UsuarioController extends Controller
 
     public function update(Request $request, $id)
     {
-        $user = User::with('empleado.persona')->findOrFail($id);
-        $personaId = $user->empleado?->persona?->id_persona;
+        $user = User::with('empleado', 'roles')->findOrFail($id);
+        $empleadoId = $user->empleado?->id_empleado;
 
         $validated = $request->validate([
-            'ci' => 'sometimes|string|min:5|max:9|regex:/^\d+$/|unique:TPersonas,ci,' . $personaId . ',id_persona',
+            'ci' => 'sometimes|string|min:5|max:9|regex:/^\d+$/|unique:TEmpleados,ci,' . $empleadoId . ',id_empleado',
             'primer_nombre' => 'sometimes|string|min:2|max:255',
             'segundo_nombre' => 'nullable|string|max:255',
             'apellido_paterno' => 'sometimes|string|min:2|max:255',
@@ -159,7 +149,8 @@ class UsuarioController extends Controller
             'cargo' => 'sometimes|string|min:2|max:255',
             'username' => 'sometimes|string|min:3|max:255|unique:TUsuarios,username,' . $id . ',id_usuario',
             'password' => 'nullable|string|min:6',
-            'id_rol' => 'sometimes|exists:TRoles,id_rol',
+            'roles' => 'sometimes|array',
+            'roles.*' => 'exists:TRoles,id_rol',
         ], [
             'ci.regex' => 'La cédula de identidad debe contener solo números',
             'ci.unique' => 'Esta cédula de identidad ya está registrada',
@@ -179,38 +170,36 @@ class UsuarioController extends Controller
             DB::beginTransaction();
 
             $empleado = $user->empleado;
-            $persona = $empleado?->persona;
 
-            if ($persona && $request->hasAny(['ci', 'primer_nombre', 'segundo_nombre', 'apellido_paterno', 'apellido_materno', 'fecha_nacimiento', 'telefono'])) {
+            if ($empleado && $request->hasAny(['ci', 'primer_nombre', 'segundo_nombre', 'apellido_paterno', 'apellido_materno', 'fecha_nacimiento', 'telefono', 'cargo'])) {
                 $cambios = [];
                 $camposAudit = [];
                 $valoresAnt = [];
                 $valoresNue = [];
-                foreach (['ci', 'primer_nombre', 'segundo_nombre', 'apellido_paterno', 'apellido_materno', 'fecha_nacimiento', 'telefono'] as $campo) {
-                    if ($request->has($campo) && $request->$campo !== $persona->$campo) {
+
+                $camposPersona = ['ci', 'primer_nombre', 'segundo_nombre', 'apellido_paterno', 'apellido_materno', 'fecha_nacimiento', 'telefono'];
+
+                foreach ($camposPersona as $campo) {
+                    if ($request->has($campo) && $request->$campo !== $empleado->$campo) {
                         $cambios[$campo] = $request->$campo;
                         $camposAudit[] = $campo;
-                        $valoresAnt[] = $persona->$campo ?? '';
+                        $valoresAnt[] = $empleado->$campo ?? '';
                         $valoresNue[] = $request->$campo;
                     }
                 }
+
+                if ($request->has('cargo') && $request->cargo !== $empleado->cargo) {
+                    $cambios['cargo'] = $request->cargo;
+                    $camposAudit[] = 'cargo';
+                    $valoresAnt[] = $empleado->cargo ?? '';
+                    $valoresNue[] = $request->cargo;
+                }
+
                 if (!empty($cambios)) {
                     $cambios['usuarioA'] = $usuarioId;
                     $cambios['fechahoraA'] = now();
-                    $persona->update($cambios);
-                    $this->registrarAuditoria('TPersonas', $persona->id_persona, 'U', implode('|', $camposAudit), implode('|', $valoresAnt), implode('|', $valoresNue), 'Actualizacion de persona');
-                }
-            }
-
-            if ($empleado && $request->has('cargo')) {
-                $cargoAnterior = $empleado->cargo;
-                if ($request->cargo !== $cargoAnterior) {
-                    $empleado->update([
-                        'cargo' => $request->cargo,
-                        'usuarioA' => $usuarioId,
-                        'fechahoraA' => now(),
-                    ]);
-                    $this->registrarAuditoria('TEmpleados', $empleado->id_empleado, 'U', 'cargo', $cargoAnterior, $request->cargo, 'Actualizacion de cargo');
+                    $empleado->update($cambios);
+                    $this->registrarAuditoria('TEmpleados', $empleado->id_empleado, 'U', implode('|', $camposAudit), implode('|', $valoresAnt), implode('|', $valoresNue), 'Actualizacion de empleado');
                 }
             }
 
@@ -231,17 +220,24 @@ class UsuarioController extends Controller
                 $valoresUserAnt[] = '[oculto]';
                 $valoresUserNue[] = '[oculto]';
             }
-            if ($request->has('id_rol') && $request->id_rol != $user->id_rol) {
-                $datosUser['id_rol'] = $request->id_rol;
-                $camposUserAudit[] = 'id_rol';
-                $valoresUserAnt[] = (string) $user->id_rol;
-                $valoresUserNue[] = (string) $request->id_rol;
+            if ($request->has('roles')) {
+                $rolesActuales = $user->roles->pluck('id_rol')->toArray();
+                $rolesNuevos = $request->roles;
+                if ($rolesActuales !== $rolesNuevos) {
+                    $user->roles()->sync($rolesNuevos);
+                    $camposUserAudit[] = 'roles';
+                    $valoresUserAnt[] = implode(',', $rolesActuales);
+                    $valoresUserNue[] = implode(',', $rolesNuevos);
+                }
             }
 
             if (!empty($datosUser)) {
                 $datosUser['usuarioA'] = $usuarioId;
                 $datosUser['fechahoraA'] = now();
                 $user->update($datosUser);
+            }
+
+            if (!empty($camposUserAudit)) {
                 $this->registrarAuditoria('TUsuarios', $user->id_usuario, 'U', implode('|', $camposUserAudit), implode('|', $valoresUserAnt), implode('|', $valoresUserNue), 'Actualizacion de usuario');
             }
 
@@ -249,7 +245,7 @@ class UsuarioController extends Controller
 
             return response()->json([
                 'message' => 'Usuario actualizado exitosamente',
-                'usuario' => $this->formatearUsuario($user->fresh()->load('empleado.persona', 'rol')),
+                'usuario' => $this->formatearUsuario($user->fresh()->load('empleado', 'roles')),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -304,34 +300,36 @@ class UsuarioController extends Controller
 
     private function formatearUsuario(User $user)
     {
-        $persona = $user->empleado?->persona;
+        $empleado = $user->empleado;
 
         $nombreCompleto = '';
-        if ($persona) {
+        if ($empleado) {
             $parts = array_filter([
-                $persona->primer_nombre,
-                $persona->segundo_nombre,
-                $persona->apellido_paterno,
-                $persona->apellido_materno,
+                $empleado->primer_nombre,
+                $empleado->segundo_nombre,
+                $empleado->apellido_paterno,
+                $empleado->apellido_materno,
             ]);
             $nombreCompleto = implode(' ', $parts);
         }
 
+        $roles = $user->roles ?? collect();
+
         return [
             'id_usuario' => $user->id_usuario,
             'username' => $user->username,
-            'id_rol' => $user->id_rol,
-            'rol' => $user->rol?->nombre,
+            'roles' => $roles->toArray(),
+            'rol' => $roles->pluck('nombre')->implode(', '),
             'id_empleado' => $user->id_empleado,
-            'cargo' => $user->empleado?->cargo,
+            'cargo' => $empleado?->cargo,
             'nombre_completo' => $nombreCompleto,
-            'ci' => $persona?->ci,
-            'telefono' => $persona?->telefono,
-            'primer_nombre' => $persona?->primer_nombre,
-            'segundo_nombre' => $persona?->segundo_nombre,
-            'apellido_paterno' => $persona?->apellido_paterno,
-            'apellido_materno' => $persona?->apellido_materno,
-            'fecha_nacimiento' => $persona?->fecha_nacimiento,
+            'ci' => $empleado?->ci,
+            'telefono' => $empleado?->telefono,
+            'primer_nombre' => $empleado?->primer_nombre,
+            'segundo_nombre' => $empleado?->segundo_nombre,
+            'apellido_paterno' => $empleado?->apellido_paterno,
+            'apellido_materno' => $empleado?->apellido_materno,
+            'fecha_nacimiento' => $empleado?->fecha_nacimiento,
             'estadoA' => $user->estadoA,
         ];
     }

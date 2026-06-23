@@ -14,6 +14,11 @@ const esEdicion = computed(() => !!props.usuario)
 const enviando = ref(false)
 const mensajeError = ref('')
 
+function obtenerRolesUsuario() {
+  if (!props.usuario?.roles) return []
+  return props.usuario.roles.map(r => r.id_rol)
+}
+
 const errores = ref({
   ci: '',
   primer_nombre: '',
@@ -25,7 +30,7 @@ const errores = ref({
   cargo: '',
   username: '',
   password: '',
-  id_rol: '',
+  roles: '',
 })
 
 const form = ref({
@@ -39,7 +44,7 @@ const form = ref({
   cargo: props.usuario?.cargo || '',
   username: props.usuario?.username || '',
   password: '',
-  id_rol: props.usuario?.id_rol || '',
+  roles: obtenerRolesUsuario(),
 })
 
 function limpiarErrores() {
@@ -97,8 +102,8 @@ function validar() {
     ok = false
   }
 
-  if (!form.value.id_rol) {
-    errores.value.id_rol = 'Debe seleccionar un rol'
+  if (form.value.roles.length === 0) {
+    errores.value.roles = 'Debe seleccionar al menos un rol'
     ok = false
   }
 
@@ -199,15 +204,19 @@ async function guardar() {
               <input id="password" v-model="form.password" type="password" :required="!esEdicion" />
               <p v-if="errores.password" class="field-error">{{ errores.password }}</p>
             </div>
-            <div class="campo" :class="{ 'has-error': errores.id_rol }">
-              <label for="id_rol">Rol</label>
-              <select id="id_rol" v-model="form.id_rol" required>
-                <option value="" disabled>Seleccionar rol</option>
-                <option v-for="r in roles" :key="r.id_rol" :value="r.id_rol">
-                  {{ r.nombre }}
-                </option>
-              </select>
-              <p v-if="errores.id_rol" class="field-error">{{ errores.id_rol }}</p>
+            <div class="campo campo-roles" :class="{ 'has-error': errores.roles }">
+              <label>Roles</label>
+              <div class="roles-checkboxes">
+                <label v-for="r in roles" :key="r.id_rol" class="rol-checkbox">
+                  <input
+                    type="checkbox"
+                    :value="r.id_rol"
+                    v-model="form.roles"
+                  />
+                  <span>{{ r.nombre }}</span>
+                </label>
+              </div>
+              <p v-if="errores.roles" class="field-error">{{ errores.roles }}</p>
             </div>
           </div>
         </fieldset>
@@ -317,6 +326,41 @@ legend {
   font-size: 13px;
   font-weight: 500;
   color: #042D29;
+}
+
+.campo-roles {
+  grid-column: 1 / -1;
+}
+
+.roles-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.rol-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1.5px solid #D1D5DB;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.rol-checkbox:has(input:checked) {
+  border-color: #042D29;
+  background: rgba(4, 45, 41, 0.06);
+  color: #042D29;
+  font-weight: 500;
+}
+
+.rol-checkbox input {
+  accent-color: #042D29;
 }
 
 .campo input,

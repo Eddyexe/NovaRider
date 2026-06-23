@@ -11,7 +11,13 @@ class Empleado extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'id_persona',
+        'ci',
+        'primer_nombre',
+        'segundo_nombre',
+        'apellido_paterno',
+        'apellido_materno',
+        'fecha_nacimiento',
+        'telefono',
         'fecha_ingreso',
         'sueldo_base',
         'cargo',
@@ -24,11 +30,6 @@ class Empleado extends Model
         'estadoA' => 'boolean',
         'fechahoraA' => 'datetime',
     ];
-
-    public function persona()
-    {
-        return $this->belongsTo(Persona::class, 'id_persona');
-    }
 
     public function usuario()
     {
