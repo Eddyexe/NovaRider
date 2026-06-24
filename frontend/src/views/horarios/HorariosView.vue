@@ -12,7 +12,8 @@ onMounted(async () => {
   await store.obtenerGlobal()
   await nextTick()
   gsap.fromTo('.page-header', { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: 'power3.out' })
-  gsap.fromTo('.global-card', { y: 15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power3.out', delay: 0.15 })
+  gsap.fromTo('.empleado-row', { y: 15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: 'power2.out', delay: 0.1 })
+  gsap.fromTo('.dia-card', { scale: 0.95, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.2, stagger: 0.03, ease: 'power2.out', delay: 0.3 })
 })
 
 function irADetalle(idUsuario) {
@@ -95,7 +96,11 @@ function irADetalle(idUsuario) {
   margin-top: 4px;
 }
 
-.cargando, .sin-datos {
+.cargando, .page-header, .empleado-row, .dia-card {
+  opacity: 0;
+}
+
+.sin-datos {
   text-align: center;
   color: #929079;
   padding: 60px;

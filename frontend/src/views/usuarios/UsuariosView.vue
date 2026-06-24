@@ -28,7 +28,6 @@ onMounted(async () => {
   await cargarStats()
   await nextTick()
   animarEntrada()
-  gsap.fromTo('.stats-grid', { y: -15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power3.out' })
 })
 
 watch(tabActivo, async () => {
@@ -39,8 +38,10 @@ watch(tabActivo, async () => {
 })
 
 function animarEntrada() {
-  gsap.fromTo('.tabla-wrapper', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: 'power3.out' })
-  gsap.fromTo('.tabla-usuarios tbody tr', { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.04, ease: 'power2.out', delay: 0.15 })
+  gsap.fromTo('.page-header', { y: -15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power3.out' })
+  gsap.fromTo('.stats-grid', { y: -10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power3.out', delay: 0.08 })
+  gsap.fromTo('.tabla-wrapper', { y: 15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power3.out', delay: 0.15 })
+  gsap.fromTo('.tabla-usuarios tbody tr', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.25, stagger: 0.04, ease: 'power2.out', delay: 0.2 })
 }
 
 function irADetalle(id) {
@@ -721,6 +722,11 @@ async function reactivarUsuario(id) {
 
 .enlace:hover {
   color: #741102;
+}
+
+.page-header, .stats-grid, .tabla-wrapper,
+.tabla-usuarios tbody tr {
+  opacity: 0;
 }
 
 .sin-datos {
