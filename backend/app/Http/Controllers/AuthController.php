@@ -148,7 +148,7 @@ class AuthController extends Controller
                 'id' => 'clientes',
                 'nombre' => 'Clientes y Vehículos',
                 'descripcion' => 'Registro de clientes y motocicletas',
-                'ruta' => null,
+                'ruta' => '/clientes',
                 'color' => '#042D29',
                 'roles_permitidos' => [1, 3, 4],
             ],
