@@ -7,6 +7,7 @@ use App\Http\Controllers\CompraController;
 use App\Http\Controllers\PlanillaController;
 use App\Http\Controllers\ProgramacionController;
 use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\TurnoController;
 use App\Http\Controllers\UsuarioController;
 use App\Models\Producto;
@@ -58,6 +59,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/programaciones', [ProgramacionController::class, 'store']);
         Route::get('/programaciones/global', [ProgramacionController::class, 'global']);
 
+        Route::get('/reportes/data', [ReporteController::class, 'data']);
+        Route::get('/reportes/pdf', [ReporteController::class, 'exportPdf']);
+
         Route::get('/productos', function () {
             $productos = Producto::where('estadoA', true)
                 ->orderBy('nombre')
@@ -82,5 +86,6 @@ Route::middleware('auth')->group(function () {
         Route::put('/motocicletas/{id}', [MotocicletaController::class, 'update']);
         Route::delete('/motocicletas/{id}', [MotocicletaController::class, 'destroy']);
         Route::put('/motocicletas/{id}/reactivar', [MotocicletaController::class, 'reactivar']);
+        Route::get('/motocicletas/{id}/historial', [MotocicletaController::class, 'historial']);
     });
 });

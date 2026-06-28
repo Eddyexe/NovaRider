@@ -37,4 +37,9 @@ class Motocicleta extends Model
     {
         return $this->belongsTo(Cliente::class, 'id_cliente');
     }
+
+    public function ordenesTrabajo()
+    {
+        return $this->hasMany(OrdenTrabajo::class, 'id_motocicleta');
+    }
 }

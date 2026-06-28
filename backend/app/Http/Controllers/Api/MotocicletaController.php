@@ -215,4 +215,18 @@ class MotocicletaController extends Controller
 
         return response()->json(['message' => 'Motocicleta reactivada exitosamente']);
     }
+
+    public function historial($id)
+    {
+        $motocicleta = Motocicleta::findOrFail($id);
+        $historial = $motocicleta->ordenesTrabajo()
+            ->with(['detalles.servicio', 'empleado'])
+            ->orderBy('fecha_ingreso', 'DESC')
+            ->get();
+
+        return response()->json([
+            'motocicleta' => $motocicleta,
+            'historial' => $historial
+        ]);
+    }
 }

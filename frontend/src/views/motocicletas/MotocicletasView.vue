@@ -5,6 +5,7 @@ import { useClientesStore } from '@/stores/clientesStore'
 import { useMotocicletasStore } from '@/stores/motocicletasStore'
 import MotocicletaFormModal from './MotocicletaFormModal.vue'
 import ConfirmarEliminarMotocicleta from './ConfirmarEliminarMotocicleta.vue'
+import HistorialVehiculoModal from './HistorialVehiculoModal.vue'
 
 const router = useRouter()
 const clienteStore = useClientesStore()
@@ -16,6 +17,8 @@ const motocicletaEditando = ref(null)
 const mostrarForm = ref(false)
 const motoEliminar = ref(null)
 const mostrarConfirmacion = ref(false)
+const motoHistorial = ref(null)
+const mostrarHistorial = ref(false)
 
 onMounted(async () => {
   await Promise.all([clienteStore.listar(), store.listar()])
@@ -112,6 +115,16 @@ async function reactivarMotocicleta(id) {
 function irAClientes() {
   router.push({ name: 'clientes' })
 }
+
+function verHistorial(moto) {
+  motoHistorial.value = moto
+  mostrarHistorial.value = true
+}
+
+function cerrarHistorial() {
+  mostrarHistorial.value = false
+  motoHistorial.value = null
+}
 </script>
 
 <template>
@@ -192,6 +205,7 @@ function irAClientes() {
               <td>{{ moto.anio || '—' }}</td>
               <td>{{ moto.color || '—' }}</td>
               <td>
+                <button class="btn-accion btn-historial" @click="verHistorial(moto)">Historial</button>
                 <button class="btn-accion btn-editar" @click="editarMotocicleta(moto)">Editar</button>
                 <button class="btn-accion btn-eliminar" @click="confirmarEliminar(moto)">Desactivar</button>
               </td>
@@ -236,6 +250,12 @@ function irAClientes() {
       :motocicleta="motoEliminar"
       @confirmar="eliminarMotocicleta"
       @cancelar="cancelarEliminar"
+    />
+
+    <HistorialVehiculoModal
+      v-if="mostrarHistorial"
+      :motocicleta="motoHistorial"
+      @cerrar="cerrarHistorial"
     />
   </div>
 </template>
@@ -412,6 +432,11 @@ function irAClientes() {
   font-size: 13px;
   font-weight: 600;
   margin-right: 8px;
+}
+
+.btn-historial {
+  background: #042D29;
+  color: #fff;
 }
 
 .btn-editar {

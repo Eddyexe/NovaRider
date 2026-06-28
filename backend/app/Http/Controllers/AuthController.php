@@ -192,6 +192,14 @@ class AuthController extends Controller
                 'color' => '#042D29',
                 'roles_permitidos' => [1, 3],
             ],
+            [
+                'id' => 'reportes',
+                'nombre' => 'Reportes',
+                'descripcion' => 'Información estadística y exportación PDF',
+                'ruta' => '/reportes',
+                'color' => '#042D29',
+                'roles_permitidos' => [1],
+            ],
         ];
 
         $usuario['modulos'] = array_values(array_filter($modulos, function ($m) use ($rolesIds) {

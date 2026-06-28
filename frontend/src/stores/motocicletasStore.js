@@ -68,6 +68,20 @@ export const useMotocicletasStore = defineStore('motocicletas', () => {
     }
   }
 
+  async function obtenerHistorial(id) {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await api.get(`/motocicletas/${id}/historial`)
+      return res.data
+    } catch (err) {
+      error.value = err.response?.data?.message || 'Error al cargar historial'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     motocicletas,
     motocicletasInactivas,
@@ -79,5 +93,6 @@ export const useMotocicletasStore = defineStore('motocicletas', () => {
     actualizar,
     eliminar,
     reactivar,
+    obtenerHistorial,
   }
 })
