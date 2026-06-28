@@ -110,6 +110,10 @@ async function reactivarCliente(id) {
 function irAMotocicletas() {
   router.push({ name: 'motocicletas' })
 }
+
+function exportarPdf() {
+  window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/reportes/pdf?tipo=clientes`, '_blank')
+}
 </script>
 
 <template>
@@ -166,6 +170,12 @@ function irAMotocicletas() {
             placeholder="Buscar por nombre, CI, teléfono o NIT..."
           />
         </div>
+        <button class="btn-export-pdf" @click="exportarPdf">
+          <svg viewBox="0 0 24 24" fill="none" class="icon-download">
+            <path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Exportar PDF
+        </button>
       </div>
 
       <div v-if="store.loading" class="cargando">Cargando clientes...</div>
@@ -376,6 +386,31 @@ function irAMotocicletas() {
   color: #042D29;
   font-size: 14px;
   outline: none;
+}
+
+.btn-export-pdf {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  background: #FFFFFF;
+  color: #1F2937;
+  border: 1.5px solid #D1D5DB;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-export-pdf:hover {
+  border-color: #042D29;
+  background: #F9FAFB;
+}
+
+.icon-download {
+  width: 18px;
+  height: 18px;
 }
 
 .tabla-wrapper {

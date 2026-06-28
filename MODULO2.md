@@ -7,27 +7,25 @@ Este módulo gestiona la relación entre los clientes y sus motocicletas, manten
 - **Gestión de Clientes:** CRUD completo para clientes, incluyendo validación de CI/NIT único y gestión de estado (Activo/Inactivo).
 - **Registro de Motocicletas:** Vinculación de vehículos a clientes con campos técnicos detallados (Nro. Chasis, Nro. Motor, Cilindrada, Color).
 - **Historial de Servicios por Vehículo:** Línea de tiempo visual que muestra todas las Órdenes de Trabajo (OT) pasadas de una motocicleta específica.
-- **Reportes Estadísticos:** Vista previa de datos clave como el conteo de motos por cliente y listados generales de vehículos.
-- **Exportación a PDF:** Generación de reportes profesionales utilizando la librería `dompdf` para impresión o auditoría.
+- **Acceso Rápido a Reportes:** Botón "Reportes" integrado directamente en los módulos de Clientes y Motocicletas para una navegación fluida.
+- **Reporte Global del Sistema:** Módulo centralizado con un Dashboard de métricas clave (Ingresos, Stock Crítico, Ventas del mes) y reportes detallados de Personal, Inventario y Ventas.
+- **Exportación a PDF:** Generación de reportes profesionales tanto específicos por módulo como generales del sistema.
 
 ## Arquitectura Técnica
 
 ### Backend (Laravel)
 - **Modelos:** 
-  - `Cliente.php`: Relación `hasMany` con Motocicletas.
-  - `Motocicleta.php`: Relación `hasMany` con Ordenes de Trabajo.
-  - `OrdenTrabajo.php`, `DetalleOrdenTrabajo.php`, `Servicio.php`: Estructura para el historial técnico.
+  - `Cliente.php`, `Motocicleta.php`, `User.php`, `Producto.php`, `Venta.php`.
 - **Controladores:**
-  - `Api/ClienteController.php`: Lógica de clientes y validaciones.
-  - `Api/MotocicletaController.php`: CRUD de motos y endpoint de `historial($id)`.
-  - `ReporteController.php`: Lógica de filtrado de datos y generación de PDF via ` Barryvdh\DomPDF`.
-- **Rutas:** Protegidas por middleware `role:1,3,4` según el nivel de acceso requerido.
+  - `ReporteController.php`: Ahora incluye métodos `systemStats()` para el dashboard y `exportGlobalReport()` para el PDF resumido.
+- **Vistas PDF:** 
+  - `reportes/pdf.blade.php`: Plantilla dinámica para reportes tabulares.
+  - `reportes/pdf_global.blade.php`: Plantilla de resumen ejecutivo con indicadores clave.
 
 ### Frontend (Vue 3)
 - **Vistas:**
-  - `clientes/ClientesView.vue`: Listado y gestión de propietarios.
-  - `motocicletas/MotocicletasView.vue`: Listado de vehículos con acceso rápido al historial.
-  - `reportes/ReportesView.vue`: Interfaz de filtrado y botón de exportación.
+  - `reportes/ReportesView.vue`: Rediseñada como un Centro de Reportes Global con Dashboard y selectores para todos los módulos del sistema.
+  - `clientes/ClientesView.vue` y `motocicletas/MotocicletasView.vue`: Actualizadas con botones de acceso directo al Centro de Reportes.
 - **Componentes:**
   - `HistorialVehiculoModal.vue`: Modal dinámico con línea de tiempo y animaciones GSAP para visualizar servicios pasados.
 - **Estado (Pinia):** 

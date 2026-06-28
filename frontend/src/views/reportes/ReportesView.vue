@@ -1,18 +1,34 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import api from '@/services/api'
 
-const tipo = ref('clientes')
+const tipo = ref('dashboard')
+const stats = ref(null)
 const data = ref([])
 const loading = ref(false)
 const error = ref(null)
 
+async function cargarStats() {
+  try {
+    const res = await api.get('/reportes/stats')
+    stats.value = res.data.stats
+  } catch (err) {
+    console.error('Error al cargar estadísticas')
+  }
+}
+
 async function cargarDatos() {
+  if (tipo.value === 'dashboard') {
+    await cargarStats()
+    return
+  }
+  
   loading.value = true
   error.value = null
   try {
     const res = await api.get(`/reportes/data?tipo=${tipo.value}`)
     data.value = res.data.data
+    await nextTick()
     animarTabla()
   } catch (err) {
     error.value = 'Error al cargar los datos del reporte'
@@ -29,11 +45,15 @@ function animarTabla() {
 }
 
 function exportarPdf() {
-  window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/reportes/pdf?tipo=${tipo.value}`, '_blank')
+  const t = tipo.value === 'dashboard' ? 'sistema' : tipo.value
+  window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/reportes/pdf?tipo=${t}`, '_blank')
+}
+
+function formatearMoneda(valor) {
+  return new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(valor)
 }
 
 onMounted(cargarDatos)
-
 watch(tipo, cargarDatos)
 </script>
 
@@ -41,80 +61,121 @@ watch(tipo, cargarDatos)
   <div class="reportes-page">
     <header class="page-header">
       <div>
-        <h1>Reportes</h1>
-        <p class="subtitle">Visualiza y exporta información clave de clientes y motocicletas.</p>
+        <h1>Reporte General del Sistema</h1>
+        <p class="subtitle">Análisis global de todas las áreas de NovaRider.</p>
       </div>
-    </header>
-
-    <div class="control-card">
-      <div class="selector-tipo">
-        <button 
-          class="btn-tab" 
-          :class="{ active: tipo === 'clientes' }"
-          @click="tipo = 'clientes'"
-        >
-          Clientes y Motos
-        </button>
-        <button 
-          class="btn-tab" 
-          :class="{ active: tipo === 'motos' }"
-          @click="tipo = 'motos'"
-        >
-          Registro de Motocicletas
-        </button>
-      </div>
-      
-      <button class="btn-export" @click="exportarPdf" :disabled="loading || data.length === 0">
+      <button class="btn-export-global" @click="exportarPdf" :disabled="loading">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
           <path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-        Exportar PDF
+        Exportar Reporte Global
       </button>
+    </header>
+
+    <div class="selector-container">
+      <div class="selector-tipo">
+        <button class="btn-tab" :class="{ active: tipo === 'dashboard' }" @click="tipo = 'dashboard'">Dashboard</button>
+        <button class="btn-tab" :class="{ active: tipo === 'clientes' }" @click="tipo = 'clientes'">Clientes</button>
+        <button class="btn-tab" :class="{ active: tipo === 'motos' }" @click="tipo = 'motos'">Motos</button>
+        <button class="btn-tab" :class="{ active: tipo === 'usuarios' }" @click="tipo = 'usuarios'">Personal</button>
+        <button class="btn-tab" :class="{ active: tipo === 'inventario' }" @click="tipo = 'inventario'">Inventario</button>
+        <button class="btn-tab" :class="{ active: tipo === 'ventas' }" @click="tipo = 'ventas'">Ventas</button>
+      </div>
     </div>
 
-    <div v-if="error" class="mensaje-error">{{ error }}</div>
+    <div v-if="tipo === 'dashboard'" class="dashboard-grid">
+      <div v-if="stats" class="stats-container">
+        <div class="stat-card">
+          <span class="stat-label">Clientes Activos</span>
+          <span class="stat-value">{{ stats.clientes }}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Motos en Sistema</span>
+          <span class="stat-value">{{ stats.motocicletas }}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Ventas del Mes</span>
+          <span class="stat-value">{{ stats.ventas_mes }}</span>
+        </div>
+        <div class="stat-card accent">
+          <span class="stat-label">Ingresos del Mes</span>
+          <span class="stat-value">{{ formatearMoneda(stats.ingresos_mes) }}</span>
+        </div>
+        <div class="stat-card" :class="{ 'warning': stats.stock_critico > 0 }">
+          <span class="stat-label">Productos Stock Bajo</span>
+          <span class="stat-value">{{ stats.stock_critico }}</span>
+        </div>
+      </div>
+    </div>
 
-    <div class="content-card">
-      <div v-if="loading" class="cargando">Generando vista previa...</div>
+    <div v-else class="content-container">
+      <div v-if="error" class="mensaje-error">{{ error }}</div>
       
-      <div v-else class="tabla-wrapper">
-        <table class="tabla-reporte">
-          <thead>
-            <tr v-if="tipo === 'clientes'">
-              <th>Cliente</th>
-              <th>Documento</th>
-              <th>Teléfono</th>
-              <th class="txt-centro">Motos registradas</th>
-            </tr>
-            <tr v-else>
-              <th>Placa</th>
-              <th>Vehículo</th>
-              <th>Propietario</th>
-              <th>Características</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in data" :key="item.id_cliente || item.id_motocicleta">
-              <template v-if="tipo === 'clientes'">
-                <td><strong>{{ item.primer_nombre }} {{ item.apellido_paterno }}</strong></td>
-                <td>{{ item.ci }} {{ item.nit ? `(NIT: ${item.nit})` : '' }}</td>
-                <td>{{ item.telefono || '—' }}</td>
-                <td class="txt-centro">
-                  <span class="badge-motos">{{ item.motocicletas_count }}</span>
-                </td>
-              </template>
-              <template v-else>
-                <td><span class="placa">{{ item.placa }}</span></td>
-                <td>{{ item.marca }} {{ item.modelo }} ({{ item.anio }})</td>
-                <td>{{ item.cliente ? `${item.cliente.primer_nombre} ${item.cliente.apellido_paterno}` : '—' }}</td>
-                <td>{{ item.color }} / {{ item.cilindrada || '—' }}</td>
-              </template>
-            </tr>
-            <tr v-if="data.length === 0">
-              <td colspan="4" class="sin-datos">No hay datos para mostrar</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="content-card">
+        <div v-if="loading" class="cargando">Cargando reporte detallado...</div>
+        
+        <div v-else class="tabla-wrapper">
+          <table class="tabla-reporte">
+            <thead>
+              <tr v-if="tipo === 'clientes'">
+                <th>Cliente</th>
+                <th>CI / NIT</th>
+                <th class="txt-centro">Motos</th>
+              </tr>
+              <tr v-else-if="tipo === 'motos'">
+                <th>Placa</th>
+                <th>Vehículo</th>
+                <th>Propietario</th>
+              </tr>
+              <tr v-else-if="tipo === 'usuarios'">
+                <th>Usuario</th>
+                <th>Cargo</th>
+                <th>Roles</th>
+              </tr>
+              <tr v-else-if="tipo === 'inventario'">
+                <th>Producto</th>
+                <th>Stock Disponible</th>
+                <th>Precio Venta</th>
+              </tr>
+              <tr v-else-if="tipo === 'ventas'">
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Total</th>
+                <th>Método</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in data" :key="item.id_cliente || item.id_motocicleta || item.id_usuario || item.id_producto || item.id_venta">
+                <template v-if="tipo === 'clientes'">
+                  <td><strong>{{ item.primer_nombre }} {{ item.apellido_paterno }}</strong></td>
+                  <td>{{ item.ci }}</td>
+                  <td class="txt-centro"><span class="badge">{{ item.motocicletas_count }}</span></td>
+                </template>
+                <template v-else-if="tipo === 'motos'">
+                  <td><span class="placa">{{ item.placa }}</span></td>
+                  <td>{{ item.marca }} {{ item.modelo }}</td>
+                  <td>{{ item.cliente ? `${item.cliente.primer_nombre} ${item.cliente.apellido_paterno}` : '—' }}</td>
+                </template>
+                <template v-else-if="tipo === 'usuarios'">
+                  <td><strong>{{ item.username }}</strong></td>
+                  <td>{{ item.empleado?.cargo || '—' }}</td>
+                  <td>{{ item.roles?.map(r => r.nombre).join(', ') }}</td>
+                </template>
+                <template v-else-if="tipo === 'inventario'">
+                  <td>{{ item.nombre }}</td>
+                  <td :class="{ 'txt-rojo': item.stock_disponible <= item.stock_minimo }">{{ item.stock_disponible }}</td>
+                  <td>{{ formatearMoneda(item.precio_venta) }}</td>
+                </template>
+                <template v-else-if="tipo === 'ventas'">
+                  <td>{{ new Date(item.fecha_hora).toLocaleDateString() }}</td>
+                  <td>{{ item.cliente ? `${item.cliente.primer_nombre} ${item.cliente.apellido_paterno}` : 'Cliente Final' }}</td>
+                  <td><strong>{{ formatearMoneda(item.total) }}</strong></td>
+                  <td>{{ item.metodo_pago }}</td>
+                </template>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -128,76 +189,104 @@ watch(tipo, cargarDatos)
 }
 
 .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 28px;
 }
 
 .page-header h1 {
   font-size: 26px;
   color: #042D29;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .subtitle {
   color: #929079;
 }
 
-.control-card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 16px 24px;
+.selector-container {
   margin-bottom: 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
 }
 
 .selector-tipo {
   display: flex;
-  background: #f5f4f0;
-  padding: 4px;
-  border-radius: 12px;
+  background: #fff;
+  padding: 6px;
+  border-radius: 14px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  gap: 4px;
+  overflow-x: auto;
 }
 
 .btn-tab {
   border: none;
   background: transparent;
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
   color: #929079;
+  white-space: nowrap;
   transition: all 0.2s;
 }
 
 .btn-tab.active {
-  background: #fff;
-  color: #042D29;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.btn-export {
   background: #042D29;
   color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 10px;
+}
+
+.dashboard-grid {
+  margin-top: 20px;
+}
+
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  background: #fff;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  border-top: 4px solid #042D29;
+}
+
+.stat-card.accent { border-top-color: #741102; }
+.stat-card.warning { border-top-color: #F59E0B; }
+
+.stat-label {
+  font-size: 13px;
+  color: #929079;
+  margin-bottom: 8px;
   font-weight: 600;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #042D29;
+}
+
+.btn-export-global {
+  background: #741102;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: transform 0.2s;
 }
 
-.btn-export:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.icon {
-  width: 18px;
-  height: 18px;
-}
+.btn-export-global:hover { transform: translateY(-2px); }
 
 .content-card {
   background: #fff;
@@ -222,18 +311,14 @@ watch(tipo, cargarDatos)
 .tabla-reporte td {
   padding: 16px 12px;
   border-bottom: 1px solid #f5f4f0;
-  color: #1F2937;
   font-size: 14px;
 }
 
-.txt-centro { text-align: center; }
-
-.badge-motos {
+.badge {
   background: #042D29;
   color: #fff;
-  padding: 4px 12px;
+  padding: 2px 10px;
   border-radius: 999px;
-  font-weight: 700;
   font-size: 12px;
 }
 
@@ -247,18 +332,7 @@ watch(tipo, cargarDatos)
   font-family: monospace;
 }
 
-.cargando, .sin-datos {
-  text-align: center;
-  padding: 40px;
-  color: #929079;
-}
-
-.mensaje-error {
-  background: #FFF5F5;
-  color: #741102;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border-left: 4px solid #741102;
-}
+.txt-centro { text-align: center; }
+.txt-rojo { color: #741102; font-weight: 700; }
+.cargando { text-align: center; padding: 40px; color: #929079; }
 </style>

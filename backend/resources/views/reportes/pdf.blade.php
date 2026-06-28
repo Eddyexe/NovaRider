@@ -4,100 +4,66 @@
     <meta charset="utf-8">
     <title>{{ $titulo }}</title>
     <style>
-        body {
-            font-family: 'Helvetica', Arial, sans-serif;
-            font-size: 12px;
-            color: #333;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #042D29;
-            padding-bottom: 10px;
-        }
-        .header h1 {
-            color: #042D29;
-            margin: 0;
-            font-size: 22px;
-        }
-        .info {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th {
-            background-color: #042D29;
-            color: white;
-            padding: 10px;
-            text-align: left;
-        }
-        td {
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-        }
-        .footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 10px;
-            color: #999;
-            padding: 10px 0;
-        }
+        body { font-family: 'Helvetica', Arial, sans-serif; font-size: 11px; color: #333; }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #042D29; padding-bottom: 10px; }
+        .header h1 { color: #042D29; margin: 0; font-size: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { background-color: #042D29; color: white; padding: 8px; text-align: left; }
+        td { padding: 6px; border-bottom: 1px solid #ddd; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 9px; color: #999; }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>NovaRider</h1>
-        <p>{{ $titulo }}</p>
-    </div>
-
-    <div class="info">
-        <span><strong>Fecha de generación:</strong> {{ $fecha }}</span>
+        <p><strong>{{ $titulo }}</strong></p>
+        <p>Fecha: {{ $fecha }}</p>
     </div>
 
     <table>
         <thead>
             @if($tipo === 'clientes')
-                <tr>
-                    <th>Nombre Cliente</th>
-                    <th>CI / NIT</th>
-                    <th>Teléfono</th>
-                    <th class="text-center">Motos</th>
-                </tr>
-            @else
-                <tr>
-                    <th>Placa</th>
-                    <th>Marca/Modelo</th>
-                    <th>Cliente</th>
-                    <th>Año/Color</th>
-                </tr>
+                <tr><th>Cliente</th><th>CI</th><th>Teléfono</th><th class="text-center">Motos</th></tr>
+            @elseif($tipo === 'motos')
+                <tr><th>Placa</th><th>Marca/Modelo</th><th>Año</th><th>Cliente</th></tr>
+            @elseif($tipo === 'usuarios')
+                <tr><th>Usuario</th><th>Cargo</th><th>Roles</th></tr>
+            @elseif($tipo === 'inventario')
+                <tr><th>Producto</th><th>Stock</th><th>P. Venta</th></tr>
+            @elseif($tipo === 'ventas')
+                <tr><th>Fecha</th><th>Cliente</th><th>Metodo</th><th class="text-right">Total</th></tr>
             @endif
         </thead>
         <tbody>
             @foreach($items as $item)
-                @if($tipo === 'clientes')
-                    <tr>
+                <tr>
+                    @if($tipo === 'clientes')
                         <td>{{ $item->primer_nombre }} {{ $item->apellido_paterno }}</td>
-                        <td>{{ $item->ci }} {{ $item->nit ? '/ '.$item->nit : '' }}</td>
+                        <td>{{ $item->ci }}</td>
                         <td>{{ $item->telefono }}</td>
                         <td class="text-center">{{ $item->motocicletas_count }}</td>
-                    </tr>
-                @else
-                    <tr>
+                    @elseif($tipo === 'motos')
                         <td>{{ $item->placa }}</td>
                         <td>{{ $item->marca }} {{ $item->modelo }}</td>
-                        <td>{{ $item->cliente ? $item->cliente->primer_nombre . ' ' . $item->cliente->apellido_paterno : 'N/A' }}</td>
-                        <td>{{ $item->anio }} / {{ $item->color }}</td>
-                    </tr>
-                @endif
+                        <td>{{ $item->anio }}</td>
+                        <td>{{ $item->cliente ? $item->cliente->primer_nombre . ' ' . $item->cliente->apellido_paterno : '—' }}</td>
+                    @elseif($tipo === 'usuarios')
+                        <td>{{ $item->username }}</td>
+                        <td>{{ $item->empleado->cargo ?? '—' }}</td>
+                        <td>{{ $item->roles->pluck('nombre')->implode(', ') }}</td>
+                    @elseif($tipo === 'inventario')
+                        <td>{{ $item->nombre }}</td>
+                        <td>{{ $item->stock_disponible }}</td>
+                        <td>{{ number_format($item->precio_venta, 2) }}</td>
+                    @elseif($tipo === 'ventas')
+                        <td>{{ date('d/m/Y', strtotime($item->fecha_hora)) }}</td>
+                        <td>{{ $item->cliente ? $item->cliente->primer_nombre : 'C. Final' }}</td>
+                        <td>{{ $item->metodo_pago }}</td>
+                        <td class="text-right">{{ number_format($item->total, 2) }}</td>
+                    @endif
+                </tr>
             @endforeach
         </tbody>
     </table>

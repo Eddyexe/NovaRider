@@ -62,6 +62,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/programaciones', [ProgramacionController::class, 'store']);
         Route::get('/programaciones/global', [ProgramacionController::class, 'global']);
 
+        Route::get('/reportes/stats', [ReporteController::class, 'systemStats']);
         Route::get('/reportes/data', [ReporteController::class, 'data']);
         Route::get('/reportes/pdf', [ReporteController::class, 'exportPdf']);
 
