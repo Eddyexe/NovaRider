@@ -43,9 +43,10 @@ function cardLeave(e) {
             :key="m.id"
             :to="m.ruta || undefined"
             class="modulo-card"
-            :class="{ 'modulo-card-link': !!m.ruta }"
+            :class="{ 'modulo-card-link': true }"
             @mouseenter="cardEnter"
             @mouseleave="cardLeave"
+            @click="m.nombre.includes('Caja') ? $router.push('/taller/caja') : (m.nombre.includes('Inventario') ? $router.push('/taller/equipamiento') : null)"
           >
             <div class="modulo-card-accent" :style="{ background: m.color }" />
             <div class="modulo-card-body">
@@ -61,9 +62,7 @@ function cardLeave(e) {
                   <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="#929079" stroke-width="1.5" />
                 </svg>
               </div>
-              <span class="modulo-nombre" v-html="m.nombre" />
-              <span class="modulo-desc" v-html="m.descripcion" />
-              <span v-if="m.ruta" class="modulo-flecha">&rarr;</span>
+<span class="modulo-nombre" v-html="(m.nombre.includes('Caja') ? 'Ventas' : m.nombre)" />              <span class="modulo-flecha">&rarr;</span>
             </div>
           </component>
         </div>

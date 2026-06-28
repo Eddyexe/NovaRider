@@ -1,6 +1,10 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
+// 🎨 Agrega estas dos líneas para activar Bootstrap en tus componentes Vue de golpe
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap-icons/font/bootstrap-icons.css'
+
 import App from './App.vue'
 import router from './router'
 

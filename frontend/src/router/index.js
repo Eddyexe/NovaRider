@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+// Quitamos la importación directa de useAuthStore de aquí arriba para romper la referencia circular
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,10 +45,23 @@ const router = createRouter({
       name: 'acceso-denegado',
       component: () => import('@/views/AccesoDenegadoView.vue'),
     },
+    {
+      path: '/taller/caja',
+      name: 'caja',
+      component: () => import('@/views/caja/CajaView.vue'),
+    },
+    {
+      path: '/taller/equipamiento',
+      name: 'taller-equipamiento',
+      component: () => import('@/views/equipamiento/EquipamientoView.vue'),
+    }
   ],
 })
 
 router.beforeEach(async (to) => {
+  // 💡 IMPORTANTE: Importamos dinámicamente la tienda aquí adentro.
+  // Esto evita que Pinia falle por intentar llamarse antes de inicializarse.
+  const { useAuthStore } = await import('@/stores/auth')
   const auth = useAuthStore()
 
   if (!auth.user) {

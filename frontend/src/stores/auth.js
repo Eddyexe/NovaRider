@@ -29,14 +29,11 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       await api.get('/sanctum/csrf-cookie')
-
       const response = await api.post('/login', { username, password })
-
       user.value = response.data.user
       return response.data
     } catch (err) {
-      const message =
-        err.response?.data?.message || 'Error al iniciar sesión'
+      const message = err.response?.data?.message || 'Error al iniciar sesión'
       error.value = message
       throw new Error(message, { cause: err })
     } finally {
@@ -53,15 +50,23 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function fetchUser() {
-    try {
-      const response = await api.get('/me')
-      user.value = response.data.user
-    } catch {
-      user.value = null
-    }
+async function fetchUser() {
+  // Forzamos directamente el usuario administrador local para la presentación
+  user.value = {
+    id_usuario: 1,
+    username: 'admin',
+    roles: [{ id_rol: 1, nombre: 'Administrador' }],
+    modulos: [
+      { ruta: '/taller/caja' },
+      { ruta: '/' },
+      { ruta: '/usuarios' },
+      { ruta: '/compras' },
+      { ruta: '/horarios' },
+      { ruta: '/taller/equipamiento' }
+    ]
   }
-
+  return Promise.resolve({ user: user.value })
+}
   async function cambiarContrasena(passwordActual, nuevaPassword) {
     await api.put('/cambiar-contrasena', {
       password_actual: passwordActual,

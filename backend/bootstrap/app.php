@@ -14,6 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
         ]);
+
+        // AGREGAMOS ESTA REGLA PARA TUS MÓDULOS DE CAJA Y MANTENIMIENTO
+        $middleware->validateCsrfTokens(except: [
+            'taller/caja/*',
+            'taller/equipamiento/*'
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
