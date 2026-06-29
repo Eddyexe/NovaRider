@@ -78,10 +78,26 @@ function validar() {
   if (!form.value.primer_nombre || form.value.primer_nombre.length < 2) {
     errores.value.primer_nombre = 'Mínimo 2 caracteres'
     valido = false
+  } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.value.primer_nombre)) {
+    errores.value.primer_nombre = 'Solo debe contener letras'
+    valido = false
+  }
+
+  if (form.value.segundo_nombre && !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.value.segundo_nombre)) {
+    mensajeError.value = 'El segundo nombre solo debe contener letras'
+    valido = false
   }
 
   if (!form.value.apellido_paterno || form.value.apellido_paterno.length < 2) {
     errores.value.apellido_paterno = 'Mínimo 2 caracteres'
+    valido = false
+  } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.value.apellido_paterno)) {
+    errores.value.apellido_paterno = 'Solo debe contener letras'
+    valido = false
+  }
+
+  if (form.value.apellido_materno && !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.value.apellido_materno)) {
+    mensajeError.value = 'El apellido materno solo debe contener letras'
     valido = false
   }
 
@@ -90,9 +106,14 @@ function validar() {
     valido = false
   }
 
-  if (form.value.nit && form.value.nit.length < 3) {
-    errores.value.nit = 'El NIT debe tener al menos 3 caracteres'
-    valido = false
+  if (form.value.nit) {
+    if (!/^\d+$/.test(form.value.nit)) {
+      errores.value.nit = 'Solo debe contener números'
+      valido = false
+    } else if (form.value.nit.length < 3) {
+      errores.value.nit = 'El NIT debe tener al menos 3 caracteres'
+      valido = false
+    }
   }
 
   if (form.value.direccion && form.value.direccion.length > 500) {

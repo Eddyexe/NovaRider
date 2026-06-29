@@ -84,6 +84,42 @@ function irAClientes() {
   router.push({ name: 'clientes' })
 }
 
+function abrirCrear() {
+  motocicletaEditando.value = null
+  mostrarForm.value = true
+}
+
+function editarMotocicleta(moto) {
+  motocicletaEditando.value = moto
+  mostrarForm.value = true
+}
+
+function cerrarFormulario() {
+  mostrarForm.value = false
+  motocicletaEditando.value = null
+}
+
+function confirmarEliminar(moto) {
+  motoEliminar.value = moto
+  mostrarConfirmacion.value = true
+}
+
+async function eliminarMotocicleta() {
+  if (!motoEliminar.value) return
+  await store.eliminar(motoEliminar.value.id_motocicleta)
+  motoEliminar.value = null
+  mostrarConfirmacion.value = false
+}
+
+function cancelarEliminar() {
+  motoEliminar.value = null
+  mostrarConfirmacion.value = false
+}
+
+async function reactivarMotocicleta(id) {
+  await store.reactivar(id)
+}
+
 function exportarPdf() {
   window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/reportes/pdf?tipo=motos`, '_blank')
 }

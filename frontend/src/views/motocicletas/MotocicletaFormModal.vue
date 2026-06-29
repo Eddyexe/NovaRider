@@ -79,10 +79,16 @@ function validar() {
   if (!form.value.marca) {
     errores.value.marca = 'La marca es obligatoria'
     valido = false
+  } else if (!/^[a-zA-Z0-9\s.\-]+$/.test(form.value.marca)) {
+    errores.value.marca = 'Caracteres no válidos'
+    valido = false
   }
 
   if (!form.value.modelo) {
     errores.value.modelo = 'El modelo es obligatorio'
+    valido = false
+  } else if (!/^[a-zA-Z0-9\s.\-]+$/.test(form.value.modelo)) {
+    errores.value.modelo = 'Caracteres no válidos'
     valido = false
   }
 
@@ -91,6 +97,11 @@ function validar() {
     valido = false
   } else if (!/^[0-9]{4}$/.test(String(form.value.anio))) {
     errores.value.anio = 'El año debe tener 4 dígitos'
+    valido = false
+  }
+
+  if (form.value.cilindrada && !/^[0-9]+(\s?cc)?$/i.test(form.value.cilindrada)) {
+    mensajeError.value = 'La cilindrada debe ser numérica (ej: 250 o 250cc)'
     valido = false
   }
 
