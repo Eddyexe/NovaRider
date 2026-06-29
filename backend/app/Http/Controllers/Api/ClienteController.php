@@ -15,7 +15,7 @@ class ClienteController extends Controller
     {
         $inactivos = $request->boolean('inactivos');
 
-        $query = Cliente::orderBy('primer_nombre', 'ASC');
+        $query = Cliente::with('motocicletas')->orderBy('primer_nombre', 'ASC');
 
         if ($inactivos) {
             $query->where('estadoA', false);

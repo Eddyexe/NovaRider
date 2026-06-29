@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useClientesStore } from '@/stores/clientesStore'
 import ClienteFormModal from './ClienteFormModal.vue'
 import ConfirmarEliminarCliente from './ConfirmarEliminarCliente.vue'
@@ -42,7 +42,8 @@ const clientesFiltrados = computed(() => {
   return store.clientes.filter((c) => {
     if (!q) return true
 
-    return [
+    // Buscar en datos del cliente
+    const coincideCliente = [
       nombreCompleto(c),
       c.ci,
       c.telefono,
@@ -51,6 +52,19 @@ const clientesFiltrados = computed(() => {
     ]
       .filter(Boolean)
       .some((value) => value.toLowerCase().includes(q))
+
+    if (coincideCliente) return true
+
+    // Buscar en sus motocicletas
+    return (c.motocicletas || []).some((m) => {
+      return [
+        m.placa,
+        m.marca,
+        m.modelo,
+      ]
+        .filter(Boolean)
+        .some((v) => v.toLowerCase().includes(q))
+    })
   })
 })
 
@@ -59,7 +73,7 @@ const inactivosFiltrados = computed(() => {
   return store.clientesInactivos.filter((c) => {
     if (!q) return true
 
-    return [
+    const coincideCliente = [
       nombreCompleto(c),
       c.ci,
       c.telefono,
@@ -68,8 +82,25 @@ const inactivosFiltrados = computed(() => {
     ]
       .filter(Boolean)
       .some((value) => value.toLowerCase().includes(q))
+
+    if (coincideCliente) return true
+
+    return (c.motocicletas || []).some((m) => {
+      return [
+        m.placa,
+        m.marca,
+        m.modelo,
+      ]
+        .filter(Boolean)
+        .some((v) => v.toLowerCase().includes(q))
+    })
   })
 })
+
+function quitarFiltroCliente() {
+  idClienteFiltro.value = null
+  router.replace({ query: { ...route.query, clienteId: undefined } })
+}
 
 function abrirCrear() {
   clienteEditando.value = null
@@ -167,7 +198,7 @@ function exportarPdf() {
             v-model="busqueda"
             type="text"
             class="search-input"
-            placeholder="Buscar por nombre, CI, teléfono o NIT..."
+            placeholder="Buscar por cliente o datos de su motocicleta (placa, marca)..."
           />
         </div>
         <button class="btn-export-pdf" @click="exportarPdf">
@@ -439,6 +470,17 @@ function exportarPdf() {
   vertical-align: top;
   font-size: 14px;
   color: #1F2937;
+}
+
+.nombre-link {
+  color: #042D29;
+  cursor: pointer;
+  display: block;
+}
+
+.nombre-link:hover {
+  text-decoration: underline;
+  color: #741102;
 }
 
 .dato-secundario {

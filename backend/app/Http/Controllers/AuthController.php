@@ -193,14 +193,6 @@ class AuthController extends Controller
                 'roles_permitidos' => [1, 3],
             ],
             [
-                'id' => 'reportes',
-                'nombre' => 'Reportes',
-                'descripcion' => 'Información estadística y exportación PDF',
-                'ruta' => '/reportes',
-                'color' => '#042D29',
-                'roles_permitidos' => [1],
-            ],
-            [
                 'id' => 'reservas',
                 'nombre' => 'Reservas y Envíos',
                 'descripcion' => 'Gestión de reservas, despachos y envíos',

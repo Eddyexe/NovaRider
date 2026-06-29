@@ -2,27 +2,12 @@
 import { ref, onMounted, watch, nextTick } from 'vue'
 import api from '@/services/api'
 
-const tipo = ref('dashboard')
-const stats = ref(null)
+const tipo = ref('clientes')
 const data = ref([])
 const loading = ref(false)
 const error = ref(null)
 
-async function cargarStats() {
-  try {
-    const res = await api.get('/reportes/stats')
-    stats.value = res.data.stats
-  } catch (err) {
-    console.error('Error al cargar estadísticas')
-  }
-}
-
 async function cargarDatos() {
-  if (tipo.value === 'dashboard') {
-    await cargarStats()
-    return
-  }
-  
   loading.value = true
   error.value = null
   try {
@@ -45,8 +30,7 @@ function animarTabla() {
 }
 
 function exportarPdf() {
-  const t = tipo.value === 'dashboard' ? 'sistema' : tipo.value
-  window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/reportes/pdf?tipo=${t}`, '_blank')
+  window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/reportes/pdf?tipo=${tipo.value}`, '_blank')
 }
 
 function formatearMoneda(valor) {
@@ -61,20 +45,19 @@ watch(tipo, cargarDatos)
   <div class="reportes-page">
     <header class="page-header">
       <div>
-        <h1>Reporte General del Sistema</h1>
-        <p class="subtitle">Análisis global de todas las áreas de NovaRider.</p>
+        <h1>Reportes del Sistema</h1>
+        <p class="subtitle">Genera informes detallados de cada módulo de NovaRider.</p>
       </div>
-      <button class="btn-export-global" @click="exportarPdf" :disabled="loading">
+      <button class="btn-export-global" @click="window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/reportes/pdf?tipo=sistema`, '_blank')" :disabled="loading">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
           <path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-        Exportar Reporte Global
+        Descargar Resumen Ejecutivo
       </button>
     </header>
 
     <div class="selector-container">
       <div class="selector-tipo">
-        <button class="btn-tab" :class="{ active: tipo === 'dashboard' }" @click="tipo = 'dashboard'">Dashboard</button>
         <button class="btn-tab" :class="{ active: tipo === 'clientes' }" @click="tipo = 'clientes'">Clientes</button>
         <button class="btn-tab" :class="{ active: tipo === 'motos' }" @click="tipo = 'motos'">Motos</button>
         <button class="btn-tab" :class="{ active: tipo === 'usuarios' }" @click="tipo = 'usuarios'">Personal</button>
@@ -83,36 +66,16 @@ watch(tipo, cargarDatos)
       </div>
     </div>
 
-    <div v-if="tipo === 'dashboard'" class="dashboard-grid">
-      <div v-if="stats" class="stats-container">
-        <div class="stat-card">
-          <span class="stat-label">Clientes Activos</span>
-          <span class="stat-value">{{ stats.clientes }}</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Motos en Sistema</span>
-          <span class="stat-value">{{ stats.motocicletas }}</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Ventas del Mes</span>
-          <span class="stat-value">{{ stats.ventas_mes }}</span>
-        </div>
-        <div class="stat-card accent">
-          <span class="stat-label">Ingresos del Mes</span>
-          <span class="stat-value">{{ formatearMoneda(stats.ingresos_mes) }}</span>
-        </div>
-        <div class="stat-card" :class="{ 'warning': stats.stock_critico > 0 }">
-          <span class="stat-label">Productos Stock Bajo</span>
-          <span class="stat-value">{{ stats.stock_critico }}</span>
-        </div>
-      </div>
-    </div>
-
-    <div v-else class="content-container">
+    <div class="content-container">
       <div v-if="error" class="mensaje-error">{{ error }}</div>
       
       <div class="content-card">
-        <div v-if="loading" class="cargando">Cargando reporte detallado...</div>
+        <div class="header-previa">
+          <h3>Vista previa del reporte</h3>
+          <button class="btn-export" @click="exportarPdf" :disabled="loading || data.length === 0">
+             Exportar lista actual a PDF
+          </button>
+        </div>
         
         <div v-else class="tabla-wrapper">
           <table class="tabla-reporte">
@@ -293,6 +256,38 @@ watch(tipo, cargarDatos)
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.header-previa {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #f5f4f0;
+}
+
+.header-previa h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #042D29;
+}
+
+.btn-export {
+  background: #FFFFFF;
+  color: #042D29;
+  border: 1.5px solid #042D29;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.btn-export:hover {
+  background: #042D29;
+  color: #fff;
 }
 
 .tabla-reporte {

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useClientesStore } from '@/stores/clientesStore'
 import { useMotocicletasStore } from '@/stores/motocicletasStore'
 import MotocicletaFormModal from './MotocicletaFormModal.vue'
@@ -52,6 +52,8 @@ const motosFiltradas = computed(() => {
       m.color,
       m.cilindrada,
       nombreCliente(m),
+      m.cliente?.ci,
+      m.cliente?.nit,
     ]
       .filter(Boolean)
       .some((value) => value.toLowerCase().includes(q))
@@ -70,47 +72,13 @@ const motosInactivasFiltradas = computed(() => {
       m.color,
       m.cilindrada,
       nombreCliente(m),
+      m.cliente?.ci,
+      m.cliente?.nit,
     ]
       .filter(Boolean)
       .some((value) => value.toLowerCase().includes(q))
   })
 })
-
-function abrirCrear() {
-  motocicletaEditando.value = null
-  mostrarForm.value = true
-}
-
-function editarMotocicleta(moto) {
-  motocicletaEditando.value = moto
-  mostrarForm.value = true
-}
-
-function cerrarFormulario() {
-  mostrarForm.value = false
-  motocicletaEditando.value = null
-}
-
-function confirmarEliminar(moto) {
-  motoEliminar.value = moto
-  mostrarConfirmacion.value = true
-}
-
-async function eliminarMotocicleta() {
-  if (!motoEliminar.value) return
-  await store.eliminar(motoEliminar.value.id_motocicleta)
-  motoEliminar.value = null
-  mostrarConfirmacion.value = false
-}
-
-function cancelarEliminar() {
-  motoEliminar.value = null
-  mostrarConfirmacion.value = false
-}
-
-async function reactivarMotocicleta(id) {
-  await store.reactivar(id)
-}
 
 function irAClientes() {
   router.push({ name: 'clientes' })
@@ -180,7 +148,7 @@ function cerrarHistorial() {
             v-model="busqueda"
             type="text"
             class="search-input"
-            placeholder="Buscar por placa, cliente o modelo..."
+            placeholder="Buscar por placa, modelo o datos del propietario..."
           />
         </div>
         <button class="btn-export-pdf" @click="exportarPdf">
@@ -209,7 +177,9 @@ function cerrarHistorial() {
           <tbody v-if="tabActivo === 'activos'">
             <tr v-for="moto in motosFiltradas" :key="moto.id_motocicleta">
               <td>{{ moto.id_motocicleta }}</td>
-              <td>{{ moto.placa }}</td>
+              <td>
+                <strong>{{ moto.placa }}</strong>
+              </td>
               <td>{{ nombreCliente(moto) }}</td>
               <td>{{ moto.marca }} {{ moto.modelo }}</td>
               <td>{{ moto.anio || '—' }}</td>
