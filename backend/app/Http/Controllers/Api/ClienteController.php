@@ -39,30 +39,22 @@ class ClienteController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'ci' => 'required|string|min:5|max:9|regex:/^\d+$/|unique:TClientes,ci',
-            'primer_nombre' => 'required|string|min:2|max:255|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
-            'segundo_nombre' => 'nullable|string|max:255|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
-            'apellido_paterno' => 'required|string|min:2|max:255|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
-            'apellido_materno' => 'nullable|string|max:255|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
+            'ci' => 'required|string|regex:/^\d+$/|unique:TClientes,ci',
+            'primer_nombre' => 'required|string|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
+            'segundo_nombre' => 'nullable|string|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
+            'apellido_paterno' => 'required|string|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
+            'apellido_materno' => 'nullable|string|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
             'fecha_nacimiento' => 'nullable|date|before:today',
             'telefono' => 'nullable|string|regex:/^\d{8}$/',
             'nit' => 'nullable|string|regex:/^\d+$/|unique:TClientes,nit',
             'direccion' => 'nullable|string|max:500',
         ], [
-            'ci.regex' => 'La cédula de identidad debe contener solo números',
-            'ci.unique' => 'Esta cédula de identidad ya está registrada',
-            'ci.min' => 'La cédula debe tener al menos 5 dígitos',
-            'ci.max' => 'La cédula debe tener máximo 9 dígitos',
-            'primer_nombre.regex' => 'El primer nombre solo debe contener letras',
-            'segundo_nombre.regex' => 'El segundo nombre solo debe contener letras',
-            'apellido_paterno.regex' => 'El apellido paterno solo debe contener letras',
-            'apellido_materno.regex' => 'El apellido materno solo debe contener letras',
-            'telefono.regex' => 'El teléfono debe tener 8 dígitos',
-            'nit.regex' => 'El NIT solo debe contener números',
-            'fecha_nacimiento.before' => 'La fecha de nacimiento no puede ser futura',
-            'primer_nombre.min' => 'El primer nombre debe tener al menos 2 caracteres',
-            'apellido_paterno.min' => 'El apellido paterno debe tener al menos 2 caracteres',
-            'nit.unique' => 'Este NIT ya está registrado',
+            'ci.regex' => 'Solo números',
+            'ci.unique' => 'Ya registrado',
+            'primer_nombre.regex' => 'Solo letras',
+            'apellido_paterno.regex' => 'Solo letras',
+            'telefono.regex' => '8 números',
+            'nit.regex' => 'Solo números',
         ]);
 
         $usuarioId = auth()->id();
@@ -115,25 +107,23 @@ class ClienteController extends Controller
         $cliente = Cliente::findOrFail($id);
 
         $validated = $request->validate([
-            'ci' => 'sometimes|string|min:5|max:9|regex:/^\d+$/|unique:TClientes,ci,' . $id . ',id_cliente',
-            'primer_nombre' => 'sometimes|string|min:2|max:255|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
-            'segundo_nombre' => 'nullable|string|max:255|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
-            'apellido_paterno' => 'sometimes|string|min:2|max:255|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
-            'apellido_materno' => 'nullable|string|max:255|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
+            'ci' => 'sometimes|string|regex:/^\d+$/|unique:TClientes,ci,' . $id . ',id_cliente',
+            'primer_nombre' => 'sometimes|string|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
+            'segundo_nombre' => 'nullable|string|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
+            'apellido_paterno' => 'sometimes|string|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
+            'apellido_materno' => 'nullable|string|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
             'fecha_nacimiento' => 'nullable|date|before:today',
             'telefono' => 'nullable|string|regex:/^\d{8}$/',
             'nit' => 'sometimes|string|regex:/^\d+$/|unique:TClientes,nit,' . $id . ',id_cliente',
             'direccion' => 'nullable|string|max:500',
         ], [
-            'ci.regex' => 'La cédula de identidad debe contener solo números',
-            'ci.unique' => 'Esta cédula de identidad ya está registrada',
-            'primer_nombre.regex' => 'El primer nombre solo debe contener letras',
-            'segundo_nombre.regex' => 'El segundo nombre solo debe contener letras',
-            'apellido_paterno.regex' => 'El apellido paterno solo debe contener letras',
-            'apellido_materno.regex' => 'El apellido materno solo debe contener letras',
-            'telefono.regex' => 'El teléfono debe tener 8 dígitos',
-            'nit.regex' => 'El NIT solo debe contener números',
-            'nit.unique' => 'Este NIT ya está registrado',
+            'ci.regex' => 'Solo números',
+            'ci.unique' => 'Ya registrado',
+            'primer_nombre.regex' => 'Solo letras',
+            'apellido_paterno.regex' => 'Solo letras',
+            'telefono.regex' => '8 números',
+            'nit.regex' => 'Solo números',
+            'nit.unique' => 'Ya registrado',
         ]);
 
         $usuarioId = auth()->id();

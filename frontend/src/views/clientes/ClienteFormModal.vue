@@ -65,44 +65,31 @@ function validar() {
   limpiarErrores()
 
   if (!form.value.ci) {
-    errores.value.ci = 'La cédula de identidad es obligatoria'
+    errores.value.ci = 'Obligatorio'
     valido = false
   } else if (!/^\d+$/.test(form.value.ci)) {
-    errores.value.ci = 'Debe contener solo números'
-    valido = false
-  } else if (form.value.ci.length < 5 || form.value.ci.length > 9) {
-    errores.value.ci = 'Debe tener entre 5 y 9 dígitos'
+    errores.value.ci = 'Solo números'
     valido = false
   }
 
-  if (!form.value.primer_nombre || form.value.primer_nombre.length < 2) {
-    errores.value.primer_nombre = 'Mínimo 2 caracteres'
+  if (!form.value.primer_nombre) {
+    errores.value.primer_nombre = 'Obligatorio'
     valido = false
   } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.value.primer_nombre)) {
-    errores.value.primer_nombre = 'Solo debe contener letras'
+    errores.value.primer_nombre = 'Solo letras'
     valido = false
   }
 
-  if (form.value.segundo_nombre && !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.value.segundo_nombre)) {
-    mensajeError.value = 'El segundo nombre solo debe contener letras'
-    valido = false
-  }
-
-  if (!form.value.apellido_paterno || form.value.apellido_paterno.length < 2) {
-    errores.value.apellido_paterno = 'Mínimo 2 caracteres'
+  if (!form.value.apellido_paterno) {
+    errores.value.apellido_paterno = 'Obligatorio'
     valido = false
   } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.value.apellido_paterno)) {
-    errores.value.apellido_paterno = 'Solo debe contener letras'
-    valido = false
-  }
-
-  if (form.value.apellido_materno && !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.value.apellido_materno)) {
-    mensajeError.value = 'El apellido materno solo debe contener letras'
+    errores.value.apellido_paterno = 'Solo letras'
     valido = false
   }
 
   if (form.value.telefono && !/^\d{8}$/.test(form.value.telefono)) {
-    errores.value.telefono = 'Debe tener 8 dígitos'
+    errores.value.telefono = '8 dígitos numéricos'
     valido = false
   }
 
@@ -310,6 +297,7 @@ async function guardar() {
   justify-content: flex-end;
   gap: 12px;
   padding: 0 24px 24px;
+  margin-top: 28px;
 }
 
 .btn-cancelar,

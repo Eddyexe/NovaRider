@@ -59,20 +59,9 @@ class MotocicletaController extends Controller
             'nro_chasis' => 'nullable|string|max:100|unique:TMotocicletas,nro_chasis',
             'nro_motor' => 'nullable|string|max:100|unique:TMotocicletas,nro_motor',
             'color' => 'nullable|string|max:50',
-            'cilindrada' => 'nullable|string|max:50|regex:/^[0-9]+(\s?cc)?$/i',
+            'cilindrada' => 'nullable|string|max:50|regex:/^\d+$/',
         ], [
-            'id_cliente.required' => 'El cliente es obligatorio',
-            'id_cliente.exists' => 'El cliente no existe',
-            'placa.required' => 'La placa es obligatoria',
-            'placa.unique' => 'Esta placa ya está registrada',
-            'marca.required' => 'La marca es obligatoria',
-            'modelo.required' => 'El modelo es obligatorio',
-            'anio.required' => 'El año es obligatorio',
-            'anio.integer' => 'El año debe ser un número entero',
-            'anio.min' => 'El año no puede ser anterior a 1900',
-            'nro_chasis.unique' => 'Este número de chasis ya está registrado',
-            'nro_motor.unique' => 'Este número de motor ya está registrado',
-            'cilindrada.regex' => 'La cilindrada debe ser numérica (ej: 250 o 250cc)',
+            'cilindrada.regex' => 'La cilindrada debe contener solo números',
         ]);
 
         $usuarioId = auth()->id();
@@ -133,12 +122,12 @@ class MotocicletaController extends Controller
             'nro_chasis' => 'nullable|string|max:100|unique:TMotocicletas,nro_chasis,' . $id . ',id_motocicleta',
             'nro_motor' => 'nullable|string|max:100|unique:TMotocicletas,nro_motor,' . $id . ',id_motocicleta',
             'color' => 'nullable|string|max:50',
-            'cilindrada' => 'nullable|string|max:50|regex:/^[0-9]+(\s?cc)?$/i',
+            'cilindrada' => 'nullable|string|max:50|regex:/^\d+$/',
         ], [
             'placa.unique' => 'Esta placa ya está registrada',
             'nro_chasis.unique' => 'Este número de chasis ya está registrado',
             'nro_motor.unique' => 'Este número de motor ya está registrado',
-            'cilindrada.regex' => 'La cilindrada debe ser numérica (ej: 250 o 250cc)',
+            'cilindrada.regex' => 'La cilindrada debe contener solo números',
         ]);
 
         $usuarioId = auth()->id();

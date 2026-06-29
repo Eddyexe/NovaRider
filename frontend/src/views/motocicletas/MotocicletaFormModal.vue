@@ -72,20 +72,20 @@ function validar() {
   }
 
   if (!form.value.placa) {
-    errores.value.placa = 'La placa es obligatoria'
+    errores.value.placa = 'Obligatoria'
     valido = false
   }
 
   if (!form.value.marca) {
-    errores.value.marca = 'La marca es obligatoria'
+    errores.value.marca = 'Obligatoria'
     valido = false
-  } else if (!/^[a-zA-Z0-9\s.\-]+$/.test(form.value.marca)) {
-    errores.value.marca = 'Caracteres no válidos'
+  } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s.\-]+$/.test(form.value.marca)) {
+    errores.value.marca = 'Solo letras'
     valido = false
   }
 
   if (!form.value.modelo) {
-    errores.value.modelo = 'El modelo es obligatorio'
+    errores.value.modelo = 'Obligatorio'
     valido = false
   } else if (!/^[a-zA-Z0-9\s.\-]+$/.test(form.value.modelo)) {
     errores.value.modelo = 'Caracteres no válidos'
@@ -93,15 +93,15 @@ function validar() {
   }
 
   if (!form.value.anio) {
-    errores.value.anio = 'El año es obligatorio'
+    errores.value.anio = 'Obligatorio'
     valido = false
-  } else if (!/^[0-9]{4}$/.test(String(form.value.anio))) {
-    errores.value.anio = 'El año debe tener 4 dígitos'
+  } else if (!/^\d{4}$/.test(String(form.value.anio))) {
+    errores.value.anio = '4 números'
     valido = false
   }
 
-  if (form.value.cilindrada && !/^[0-9]+(\s?cc)?$/i.test(form.value.cilindrada)) {
-    mensajeError.value = 'La cilindrada debe ser numérica (ej: 250 o 250cc)'
+  if (form.value.cilindrada && !/^\d+$/.test(String(form.value.cilindrada))) {
+    mensajeError.value = 'Cilindrada solo números'
     valido = false
   }
 
@@ -292,6 +292,7 @@ async function guardar() {
   justify-content: flex-end;
   gap: 12px;
   padding: 0 24px 24px;
+  margin-top: 28px;
 }
 
 .btn-cancelar,
