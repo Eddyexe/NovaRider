@@ -280,8 +280,8 @@ const cargarHistorialDesdeBD = async () => {
         return {
           nroRecibo: v.id_venta,
           fecha: fechaFormateada,
-          cliente: 'Cliente General',
-          placa: 'S/P',
+          cliente: id_cliente,
+          placa:"",
           concepto: 'Venta de Caja',
           productosConcat: v.metodo_pago || 'Efectivo',
           itemsCount: 1,

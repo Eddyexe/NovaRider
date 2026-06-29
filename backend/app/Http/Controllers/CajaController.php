@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-// 🌟 ESTA LÍNEA DE ABAJO ELIMINA LOS 4 ERRORES EN ROJO DE TU EDITOR
 use Illuminate\Support\Facades\DB;
 
 class CajaController extends Controller
@@ -20,7 +19,6 @@ class CajaController extends Controller
                 'estado' => 'ABIERTA'
             ]);
         } catch (\Exception $e) {
-            // Permite continuar el flujo de desarrollo si la tabla no está migrada
         }
 
         return response()->json(['status' => 'success', 'monto' => $monto]);
