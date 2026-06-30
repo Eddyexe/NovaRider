@@ -38,4 +38,8 @@ Este módulo centraliza la ejecución, seguimiento y validación técnica de las
 ## Auditoría y Seguridad
 - **Trazabilidad:** Cada cambio de estado queda registrado en `TAuditoriaGeneral` mediante el `AuditoriaTrait`, identificando al responsable.
 - **Validación:** El sistema restringe la entrega si el `Checklist de Calidad` no está completado satisfactoriamente.
+<<<<<<< HEAD
 - **Roles:** El módulo es accesible para mecánicos (gestión operativa) y administradores (gestión total y reportes).
+=======
+- **Roles:** El módulo es accesible para mecánicos (gestión operativa) y administradores (gestión total y reportes).
+>>>>>>> 30867b255c39b0137e6f249b1dcadd3f11864fef

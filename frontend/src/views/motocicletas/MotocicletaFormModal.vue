@@ -32,9 +32,79 @@ const errores = ref({
   marca: '',
   modelo: '',
   anio: '',
+  cilindrada: '',
 })
 
 const esEdicion = computed(() => !!props.motocicleta)
+
+const soloNumeros = (e) => {
+  if (!/^\d$/.test(e.key)) {
+    e.preventDefault()
+  }
+}
+
+const soloLetrasYSimbolos = (e) => {
+  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s.-]$/.test(e.key)) {
+    e.preventDefault()
+  }
+}
+
+const soloAlfanumerico = (e) => {
+  if (!/^[a-zA-Z0-9]$/.test(e.key)) {
+    e.preventDefault()
+  }
+}
+
+const validarCampo = (campo, valor) => {
+  switch (campo) {
+    case 'id_cliente':
+      if (!valor) errores.value.id_cliente = 'Debe seleccionar un cliente'
+      else errores.value.id_cliente = ''
+      break
+    case 'placa':
+      if (!valor) errores.value.placa = 'La placa es obligatoria'
+      else errores.value.placa = ''
+      break
+    case 'marca':
+      if (!valor) errores.value.marca = 'La marca es obligatoria'
+      else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s.-]+$/.test(valor)) errores.value.marca = 'La marca solo debe contener letras'
+      else errores.value.marca = ''
+      break
+    case 'modelo':
+      if (!valor) errores.value.modelo = 'El modelo es obligatorio'
+      else if (!/^[a-zA-Z0-9\s.-]+$/.test(valor)) errores.value.modelo = 'El modelo contiene caracteres no válidos'
+      else errores.value.modelo = ''
+      break
+    case 'anio':
+      if (!valor) {
+        errores.value.anio = 'El año es obligatorio'
+      } else if (!/^\d{4}$/.test(String(valor))) {
+        errores.value.anio = 'El año debe tener 4 números'
+      } else if (valor < 1900 || valor > maxYear) {
+        errores.value.anio = `El año debe estar entre 1900 y ${maxYear}`
+      } else {
+        errores.value.anio = ''
+      }
+      break
+    case 'cilindrada':
+      if (valor && !/^\d+$/.test(String(valor))) {
+        errores.value.cilindrada = 'La cilindrada debe ser un valor numérico'
+      } else {
+        errores.value.cilindrada = ''
+      }
+      break
+  }
+}
+
+watch(
+  () => form.value,
+  (nuevoForm) => {
+    Object.keys(nuevoForm).forEach(campo => {
+      validarCampo(campo, nuevoForm[campo])
+    })
+  },
+  { deep: true }
+)
 
 watch(
   () => props.motocicleta,
@@ -63,49 +133,18 @@ function limpiarErrores() {
 }
 
 function validar() {
-  let valido = true
-  limpiarErrores()
+  Object.keys(form.value).forEach(campo => {
+    validarCampo(campo, form.value[campo])
+  })
 
-  if (!form.value.id_cliente) {
-    errores.value.id_cliente = 'El cliente es obligatorio'
-    valido = false
+  const hayErrores = Object.values(errores.value).some(error => error !== '')
+  if (hayErrores) {
+    const listaErrores = Object.values(errores.value).filter(e => e !== '').join('\n')
+    alert('Por favor corrija los siguientes errores:\n\n' + listaErrores)
+    return false
   }
 
-  if (!form.value.placa) {
-    errores.value.placa = 'Obligatoria'
-    valido = false
-  }
-
-  if (!form.value.marca) {
-    errores.value.marca = 'Obligatoria'
-    valido = false
-  } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s.\-]+$/.test(form.value.marca)) {
-    errores.value.marca = 'Solo letras'
-    valido = false
-  }
-
-  if (!form.value.modelo) {
-    errores.value.modelo = 'Obligatorio'
-    valido = false
-  } else if (!/^[a-zA-Z0-9\s.\-]+$/.test(form.value.modelo)) {
-    errores.value.modelo = 'Caracteres no válidos'
-    valido = false
-  }
-
-  if (!form.value.anio) {
-    errores.value.anio = 'Obligatorio'
-    valido = false
-  } else if (!/^\d{4}$/.test(String(form.value.anio))) {
-    errores.value.anio = '4 números'
-    valido = false
-  }
-
-  if (form.value.cilindrada && !/^\d+$/.test(String(form.value.cilindrada))) {
-    mensajeError.value = 'Cilindrada solo números'
-    valido = false
-  }
-
-  return valido
+  return true
 }
 
 async function guardar() {
@@ -153,39 +192,40 @@ async function guardar() {
           </div>
           <div class="campo" :class="{ 'has-error': errores.placa }">
             <label for="placa">Placa</label>
-            <input id="placa" v-model="form.placa" type="text" />
+            <input id="placa" v-model="form.placa" type="text" maxlength="10" @keypress="soloAlfanumerico" />
             <p v-if="errores.placa" class="field-error">{{ errores.placa }}</p>
           </div>
           <div class="campo" :class="{ 'has-error': errores.marca }">
             <label for="marca">Marca</label>
-            <input id="marca" v-model="form.marca" type="text" />
+            <input id="marca" v-model="form.marca" type="text" @keypress="soloLetrasYSimbolos" />
             <p v-if="errores.marca" class="field-error">{{ errores.marca }}</p>
           </div>
           <div class="campo" :class="{ 'has-error': errores.modelo }">
             <label for="modelo">Modelo</label>
-            <input id="modelo" v-model="form.modelo" type="text" />
+            <input id="modelo" v-model="form.modelo" type="text" @keypress="soloAlfanumerico" />
             <p v-if="errores.modelo" class="field-error">{{ errores.modelo }}</p>
           </div>
           <div class="campo" :class="{ 'has-error': errores.anio }">
             <label for="anio">Año</label>
-            <input id="anio" v-model="form.anio" type="number" min="1900" :max="maxYear" />
+            <input id="anio" v-model="form.anio" type="number" min="1900" :max="maxYear" @keypress="soloNumeros" />
             <p v-if="errores.anio" class="field-error">{{ errores.anio }}</p>
           </div>
           <div class="campo">
             <label for="nro_chasis">Nro. Chasis</label>
-            <input id="nro_chasis" v-model="form.nro_chasis" type="text" />
+            <input id="nro_chasis" v-model="form.nro_chasis" type="text" maxlength="30" @keypress="soloAlfanumerico" />
           </div>
           <div class="campo">
             <label for="nro_motor">Nro. Motor</label>
-            <input id="nro_motor" v-model="form.nro_motor" type="text" />
+            <input id="nro_motor" v-model="form.nro_motor" type="text" maxlength="30" @keypress="soloAlfanumerico" />
           </div>
           <div class="campo">
             <label for="color">Color</label>
-            <input id="color" v-model="form.color" type="text" />
+            <input id="color" v-model="form.color" type="text" @keypress="soloLetrasYSimbolos" />
           </div>
-          <div class="campo">
+          <div class="campo" :class="{ 'has-error': errores.cilindrada }">
             <label for="cilindrada">Cilindrada</label>
-            <input id="cilindrada" v-model="form.cilindrada" type="text" />
+            <input id="cilindrada" v-model="form.cilindrada" type="text" @keypress="soloNumeros" maxlength="5" />
+            <p v-if="errores.cilindrada" class="field-error">{{ errores.cilindrada }}</p>
           </div>
         </div>
 
