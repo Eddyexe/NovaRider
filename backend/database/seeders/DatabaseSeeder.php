@@ -3,13 +3,17 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+<<<<<<< HEAD
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+=======
+>>>>>>> respaldo-caja
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+<<<<<<< HEAD
         DB::transaction(function () {
             // 1. TRoles
             DB::table('TRoles')->insert([
@@ -52,5 +56,10 @@ class DatabaseSeeder extends Seeder
                 'id_rol' => 1,
             ]);
         });
+=======
+        $this->call([
+            DatosPruebaSeeder::class,
+        ]);
+>>>>>>> respaldo-caja
     }
 }

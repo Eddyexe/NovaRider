@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class DetalleVenta extends Model
+{
+    protected $table = 'TDetallesVenta';
+    protected $primaryKey = 'id_detalle_venta';
+    public $timestamps = false;
+
+    protected $fillable = [
+        'id_venta',
+        'id_producto',
+        'cantidad',
+        'precio_unitario_historico',
+        'subtotal',
+        'estadoA',
+        'usuarioA',
+        'fechahoraA'
+    ];
+
+    public function venta()
+    {
+        return $this->belongsTo(Venta::class, 'id_venta');
+    }
+
+    public function producto()
+    {
+        return $this->belongsTo(Producto::class, 'id_producto');
+    }
+}

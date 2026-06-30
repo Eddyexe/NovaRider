@@ -1,12 +1,14 @@
-<script setup>
+﻿<script setup>
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUsuariosStore } from '@/stores/usuarios'
+import { useToastStore } from '@/stores/toast'
 import UsuarioFormModal from './UsuarioFormModal.vue'
 import ConfirmarEliminacion from './ConfirmarEliminacion.vue'
 
 const router = useRouter()
 const store = useUsuariosStore()
+const toast = useToastStore()
 
 const tabActivo = ref('activos')
 const busqueda = ref('')
@@ -24,7 +26,7 @@ async function cargarStats() {
 }
 
 onMounted(async () => {
-  await Promise.all([store.listar(), store.listarInactivos()])
+  await Promise.all([store.listar(), store.listarInactivos(), store.obtenerRoles()])
   await cargarStats()
   await nextTick()
   animarEntrada()
@@ -41,7 +43,7 @@ function animarEntrada() {
   gsap.fromTo('.page-header', { y: -15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power3.out' })
   gsap.fromTo('.stats-grid', { y: -10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power3.out', delay: 0.08 })
   gsap.fromTo('.tabla-wrapper', { y: 15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power3.out', delay: 0.15 })
-  gsap.fromTo('.tabla-usuarios tbody tr', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.25, stagger: 0.04, ease: 'power2.out', delay: 0.2 })
+  gsap.from('.tabla-usuarios tbody tr', { y: 10, opacity: 0, duration: 0.25, stagger: 0.04, ease: 'power2.out', delay: 0.2 })
 }
 
 function irADetalle(id) {
@@ -104,6 +106,7 @@ function confirmarEliminar(usuario) {
 
 async function eliminarUsuario() {
   await store.eliminar(usuarioEliminar.value.id_usuario)
+  toast.show('Usuario desactivado correctamente', 'success')
   mostrarConfirmacion.value = false
   usuarioEliminar.value = null
 }
@@ -115,6 +118,11 @@ function cancelarEliminar() {
 
 async function reactivarUsuario(id) {
   await store.reactivar(id)
+  toast.show('Usuario reactivado correctamente', 'success')
+}
+
+function exportarPdf() {
+  window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/reportes/pdf?tipo=usuarios`, '_blank')
 }
 </script>
 
@@ -207,6 +215,12 @@ async function reactivarUsuario(id) {
             </option>
           </select>
         </div>
+        <button class="btn-export-pdf" @click="exportarPdf">
+          <svg viewBox="0 0 24 24" fill="none" class="icon-download">
+            <path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Exportar PDF
+        </button>
       </div>
 
       <div class="toolbar" v-else>
@@ -246,7 +260,7 @@ async function reactivarUsuario(id) {
                 <span class="emp-cargo">{{ u.cargo }}</span>
               </td>
               <td class="col-user">{{ u.username }}</td>
-              <td class="col-ci">{{ u.ci || '—' }}</td>
+              <td class="col-ci">{{ u.ci || 'â€”' }}</td>
               <td class="col-rol">
                 <div class="roles-wrap">
                   <span
@@ -286,7 +300,7 @@ async function reactivarUsuario(id) {
                 <span class="emp-cargo">{{ u.cargo }}</span>
               </td>
               <td class="col-user">{{ u.username }}</td>
-              <td class="col-ci">{{ u.ci || '—' }}</td>
+              <td class="col-ci">{{ u.ci || 'â€”' }}</td>
               <td class="col-rol">
                 <span class="badge-rol inactivo">Inactivo</span>
               </td>
@@ -315,6 +329,7 @@ async function reactivarUsuario(id) {
       :usuario="usuarioEditando"
       :roles="store.roles"
       @cerrar="cerrarFormulario"
+      @guardado="(tipo) => toast.show(tipo === 'creado' ? 'Usuario creado correctamente' : 'Usuario actualizado correctamente', 'success')"
     />
 
     <ConfirmarEliminacion
@@ -381,7 +396,7 @@ async function reactivarUsuario(id) {
   margin-bottom: 16px;
 }
 
-/* ── Card ── */
+/* â”€â”€ Card â”€â”€ */
 .content-card {
   background: #FFFFFF;
   border-radius: 16px;
@@ -391,7 +406,7 @@ async function reactivarUsuario(id) {
   border-image: linear-gradient(90deg, #042D29, #741102) 1;
 }
 
-/* ── Tabs ── */
+/* â”€â”€ Tabs â”€â”€ */
 .tabs {
   display: flex;
   border-bottom: 1px solid #E5E7EB;
@@ -447,7 +462,7 @@ async function reactivarUsuario(id) {
   color: #929079;
 }
 
-/* ── Toolbar ── */
+/* â”€â”€ Toolbar â”€â”€ */
 .toolbar {
   display: flex;
   gap: 12px;
@@ -515,7 +530,32 @@ async function reactivarUsuario(id) {
   box-shadow: 0 0 0 3px rgba(4, 45, 41, 0.1);
 }
 
-/* ── Loading ── */
+.btn-export-pdf {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  background: #FFFFFF;
+  color: #1F2937;
+  border: 1.5px solid #D1D5DB;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-export-pdf:hover {
+  border-color: #042D29;
+  background: #F9FAFB;
+}
+
+.icon-download {
+  width: 18px;
+  height: 18px;
+}
+
+/* â”€â”€ Loading â”€â”€ */
 .cargando {
   text-align: center;
   color: #929079;
@@ -523,7 +563,7 @@ async function reactivarUsuario(id) {
   font-size: 14px;
 }
 
-/* ── Table ── */
+/* â”€â”€ Table â”€â”€ */
 .tabla-wrapper {
   overflow-x: auto;
 }
@@ -605,7 +645,7 @@ async function reactivarUsuario(id) {
   gap: 4px;
 }
 
-/* ── Action buttons ── */
+/* â”€â”€ Action buttons â”€â”€ */
 .col-acc {
   display: flex;
   gap: 6px;
@@ -724,8 +764,7 @@ async function reactivarUsuario(id) {
   color: #741102;
 }
 
-.page-header, .stats-grid, .tabla-wrapper,
-.tabla-usuarios tbody tr {
+.page-header, .stats-grid, .tabla-wrapper {
   opacity: 0;
 }
 
@@ -736,3 +775,6 @@ async function reactivarUsuario(id) {
   font-size: 14px;
 }
 </style>
+
+
+

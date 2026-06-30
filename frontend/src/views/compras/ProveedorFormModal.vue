@@ -48,7 +48,7 @@ async function guardar() {
     } else {
       await store.crear(form.value)
     }
-    cerrar()
+    emit('guardado')
   } catch (err) {
     const data = err.response?.data
     if (data?.errors) {

@@ -28,6 +28,13 @@ function quitarFila(index) {
   form.value.detalles.splice(index, 1)
 }
 
+function onProductoChange(det) {
+  const prod = productos.value.find(p => p.id_producto === det.id_producto)
+  if (prod) {
+    det.precio_unitario_compra = prod.costo || 0
+  }
+}
+
 const total = computed(() => {
   return form.value.detalles.reduce((sum, d) => {
     return sum + (Number(d.cantidad) || 0) * (Number(d.precio_unitario_compra) || 0)
@@ -63,7 +70,7 @@ async function guardar() {
 
   try {
     await comprasStore.crear(form.value)
-    cerrar()
+    emit('guardado')
   } catch (err) {
     const data = err.response?.data
     if (data?.errors) {
@@ -143,10 +150,11 @@ async function guardar() {
                 <select
                   v-model="det.id_producto"
                   :class="{ 'input-error': errores[`detalles.${i}.id_producto`] }"
+                  @change="onProductoChange(det)"
                 >
                   <option value="">Seleccionar...</option>
                   <option v-for="p in productos" :key="p.id_producto" :value="p.id_producto">
-                    {{ p.nombre }}
+                    {{ p.nombre }} (costo: ${{ Number(p.costo).toFixed(2) }})
                   </option>
                 </select>
               </div>
