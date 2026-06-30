@@ -87,8 +87,14 @@ const validarCampo = (campo, valor) => {
       }
       break
     case 'cilindrada':
-      if (valor && !/^\d+$/.test(String(valor))) {
-        errores.value.cilindrada = 'La cilindrada debe ser un valor numérico'
+      if (valor) {
+        if (!/^\d+$/.test(String(valor))) {
+          errores.value.cilindrada = 'La cilindrada debe ser un valor numérico'
+        } else if (parseInt(valor) < 125) {
+          errores.value.cilindrada = 'La cilindrada mínima es 125cc'
+        } else {
+          errores.value.cilindrada = ''
+        }
       } else {
         errores.value.cilindrada = ''
       }

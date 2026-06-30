@@ -18,7 +18,7 @@ class MotocicletaController extends Controller
             $id_cliente = $request->query('id_cliente');
 
             // 🚀 Cargamos la relación 'cliente' para la vista principal de motos
-            $query = Motocicleta::with('cliente')->orderBy('placa', 'ASC');
+            $query = Motocicleta::with('cliente')->orderBy('id_motocicleta', 'ASC');
 
             if ($inactivos) {
                 $query->where('estadoA', false);
@@ -59,9 +59,22 @@ class MotocicletaController extends Controller
             'nro_chasis' => 'nullable|string|max:100|unique:TMotocicletas,nro_chasis',
             'nro_motor' => 'nullable|string|max:100|unique:TMotocicletas,nro_motor',
             'color' => 'nullable|string|max:50',
-            'cilindrada' => 'nullable|string|max:50|regex:/^\d+$/',
+            'cilindrada' => 'nullable|integer|min:125',
         ], [
-            'cilindrada.regex' => 'La cilindrada debe contener solo números',
+            'id_cliente.required' => 'El cliente es obligatorio',
+            'id_cliente.exists' => 'El cliente seleccionado no es válido',
+            'placa.required' => 'La placa es obligatoria',
+            'placa.unique' => 'Esta placa ya está registrada',
+            'marca.required' => 'La marca es obligatoria',
+            'modelo.required' => 'El modelo es obligatorio',
+            'anio.required' => 'El año es obligatorio',
+            'anio.integer' => 'El año debe ser un número entero',
+            'anio.min' => 'El año debe ser mayor a 1900',
+            'anio.max' => 'El año no es válido',
+            'nro_chasis.unique' => 'Este número de chasis ya está registrado',
+            'nro_motor.unique' => 'Este número de motor ya está registrado',
+            'cilindrada.integer' => 'La cilindrada debe ser un número entero',
+            'cilindrada.min' => 'La cilindrada mínima permitida es 125cc',
         ]);
 
         $usuarioId = auth()->id();
@@ -122,12 +135,17 @@ class MotocicletaController extends Controller
             'nro_chasis' => 'nullable|string|max:100|unique:TMotocicletas,nro_chasis,' . $id . ',id_motocicleta',
             'nro_motor' => 'nullable|string|max:100|unique:TMotocicletas,nro_motor,' . $id . ',id_motocicleta',
             'color' => 'nullable|string|max:50',
-            'cilindrada' => 'nullable|string|max:50|regex:/^\d+$/',
+            'cilindrada' => 'nullable|integer|min:125',
         ], [
+            'id_cliente.exists' => 'El cliente seleccionado no es válido',
             'placa.unique' => 'Esta placa ya está registrada',
             'nro_chasis.unique' => 'Este número de chasis ya está registrado',
             'nro_motor.unique' => 'Este número de motor ya está registrado',
-            'cilindrada.regex' => 'La cilindrada debe contener solo números',
+            'cilindrada.integer' => 'La cilindrada debe ser un número entero',
+            'cilindrada.min' => 'La cilindrada mínima permitida es 125cc',
+            'anio.integer' => 'El año debe ser un número entero',
+            'anio.min' => 'El año debe ser mayor a 1900',
+            'anio.max' => 'El año no es válido',
         ]);
 
         $usuarioId = auth()->id();

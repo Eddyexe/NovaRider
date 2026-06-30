@@ -38,7 +38,7 @@ const router = createRouter({
       path: '/motocicletas',
       name: 'motocicletas',
       component: () => import('@/views/motocicletas/MotocicletasView.vue'),
-      meta: { requiresAuth: true, roles: [1, 3] },
+      meta: { requiresAuth: true, roles: [1, 3, 4] },
     },
     {
       path: '/compras',

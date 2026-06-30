@@ -122,8 +122,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/reservas/{id}/registrar-envio', [ReservaController::class, 'registrarEnvio']);
     });
 
-    // --- Grupo Operativo de Taller (Roles 1, 3) ---
-    Route::middleware('role:1,3')->group(function () {
+    // --- Grupo Operativo de Taller (Roles 1, 3, 4) ---
+    Route::middleware('role:1,3,4')->group(function () {
         Route::get('/motocicletas', [MotocicletaController::class, 'index']);
         Route::post('/motocicletas', [MotocicletaController::class, 'store']);
         Route::get('/motocicletas/{id}', [MotocicletaController::class, 'show']);

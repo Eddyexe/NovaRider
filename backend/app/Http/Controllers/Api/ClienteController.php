@@ -15,7 +15,7 @@ class ClienteController extends Controller
     {
         $inactivos = $request->boolean('inactivos');
 
-        $query = Cliente::with('motocicletas')->orderBy('primer_nombre', 'ASC');
+        $query = Cliente::with('motocicletas')->orderBy('id_cliente', 'ASC');
 
         if ($inactivos) {
             $query->where('estadoA', false);
@@ -49,12 +49,18 @@ class ClienteController extends Controller
             'nit' => 'nullable|string|regex:/^\d+$/|unique:TClientes,nit',
             'direccion' => 'nullable|string|max:500',
         ], [
-            'ci.regex' => 'Solo números',
-            'ci.unique' => 'Ya registrado',
-            'primer_nombre.regex' => 'Solo letras',
-            'apellido_paterno.regex' => 'Solo letras',
-            'telefono.regex' => '8 números',
-            'nit.regex' => 'Solo números',
+            'ci.required' => 'La cédula de identidad es obligatoria',
+            'ci.regex' => 'La cédula debe contener solo números',
+            'ci.unique' => 'Esta cédula ya está registrada',
+            'primer_nombre.required' => 'El primer nombre es obligatorio',
+            'primer_nombre.regex' => 'El nombre solo debe contener letras',
+            'apellido_paterno.required' => 'El apellido paterno es obligatorio',
+            'apellido_paterno.regex' => 'El apellido solo debe contener letras',
+            'fecha_nacimiento.before' => 'La fecha de nacimiento debe ser anterior a hoy',
+            'telefono.regex' => 'El teléfono debe tener 8 números',
+            'nit.regex' => 'El NIT debe contener solo números',
+            'nit.unique' => 'Este NIT ya está registrado',
+            'direccion.max' => 'La dirección no puede exceder los 500 caracteres',
         ]);
 
         $usuarioId = auth()->id();
@@ -117,13 +123,15 @@ class ClienteController extends Controller
             'nit' => 'sometimes|string|regex:/^\d+$/|unique:TClientes,nit,' . $id . ',id_cliente',
             'direccion' => 'nullable|string|max:500',
         ], [
-            'ci.regex' => 'Solo números',
-            'ci.unique' => 'Ya registrado',
-            'primer_nombre.regex' => 'Solo letras',
-            'apellido_paterno.regex' => 'Solo letras',
-            'telefono.regex' => '8 números',
-            'nit.regex' => 'Solo números',
-            'nit.unique' => 'Ya registrado',
+            'ci.regex' => 'La cédula debe contener solo números',
+            'ci.unique' => 'Esta cédula ya está registrada',
+            'primer_nombre.regex' => 'El nombre solo debe contener letras',
+            'apellido_paterno.regex' => 'El apellido solo debe contener letras',
+            'fecha_nacimiento.before' => 'La fecha de nacimiento debe ser anterior a hoy',
+            'telefono.regex' => 'El teléfono debe tener 8 números',
+            'nit.regex' => 'El NIT debe contener solo números',
+            'nit.unique' => 'Este NIT ya está registrado',
+            'direccion.max' => 'La dirección no puede exceder los 500 caracteres',
         ]);
 
         $usuarioId = auth()->id();
