@@ -56,7 +56,7 @@ const router = createRouter({
       path: '/inventario',
       name: 'inventario',
       component: () => import('@/views/inventario/InventarioView.vue'),
-      meta: { requiresAuth: true, roles: [1, 2] },
+      meta: { requiresAuth: true, roles: [1, 2, 5] },
     },
     {
       path: '/horarios',
