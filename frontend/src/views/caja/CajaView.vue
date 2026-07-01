@@ -36,11 +36,15 @@ const historialVentas = ref([])
 onMounted(async () => {
   await cargarClientesDesdeBD()
   await cargarHistorialDesdeBD()
-  if (!cajaAbierta.value) {
+  
+  // Si NO hay sesión de caja, forzamos mostrar el modal
+  if (!sessionStorage.getItem('caja_iniciada_sesion')) {
     mostrarModalApertura.value = true
+  } else {
+    // Si hay sesión, asumimos que la caja está abierta
+    cajaAbierta.value = true
   }
 })
-
 async function cargarClientesDesdeBD() {
   try {
     const res = await api.get('/clientes-lista')
@@ -79,11 +83,19 @@ async function handleAbrirCaja() {
   try {
     logsServidor.value = 'Abriendo caja...'
     const res = await api.post('/caja/abrir', { monto_inicial: montoInicialLocal.value })
+    
     if (res.data.status === 'success') {
+      // 1. Actualizamos estados
       idCajaActiva.value = res.data.id_caja
       saldoDigital.value = parseFloat(res.data.monto)
       cajaAbierta.value = true
+      
+      // 2. Escondemos el modal
       mostrarModalApertura.value = false 
+      
+      // 3. Guardamos la sesión
+      sessionStorage.setItem('caja_iniciada_sesion', 'true')
+      
       logsServidor.value = 'Caja Abierta Exitosamente'
     }
   } catch (error) {
@@ -91,7 +103,6 @@ async function handleAbrirCaja() {
     logsServidor.value = 'Fallo al abrir caja'
   }
 }
-
 function handleAgregarItem(nuevoItem) {
   carrito.value.push(nuevoItem)
   logsServidor.value = `Agregado: ${nuevoItem.concepto}`
@@ -156,6 +167,10 @@ async function handleCerrarCaja(datosCierre) {
       idCajaActiva.value = null
       saldoDigital.value = 0
       carrito.value = []
+      
+      // LIMPIAR: Al cerrar, permitimos que vuelva a aparecer el modal
+      sessionStorage.removeItem('caja_iniciada_sesion')
+      
       mostrarModalApertura.value = true 
       logsServidor.value = `Jornada Cerrada.`
       await cargarHistorialDesdeBD()
