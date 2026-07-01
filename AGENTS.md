@@ -65,45 +65,11 @@ Modules with `ruta: null` (taller, inventario, ventas) have no nav link but can 
 - **Navigation menu** builds from `auth.modulosPermitidos` (`/me` → `modulos`)
 - **API client:** `frontend/src/services/api.js` — `axios.create({ baseURL: 'http://localhost:8000', withCredentials: true, withXSRFToken: true })`
 
-## How to add a new module
-
-1. **Model** → `app/Models/TTuModelo.php` (extends Model, `$table`, `$primaryKey`, `$timestamps = false`)
-2. **Controller** → `app/Http/Controllers/TuController.php` with `AuditoriaTrait`, call `$this->registrarAuditoria()` on every I/U/D
-3. **Routes** → `routes/web.php` inside `auth` + `role` middleware groups
-4. **Store** → `frontend/src/stores/tuStore.js` (Pinia)
-5. **View** → `frontend/src/views/tuModulo/TuVista.vue`
-6. **Route** → `frontend/src/router/index.js` with `meta: { requiresAuth: true, roles: [...] }`
-7. **Register module** → in `AuthController::cargarUsuario()` → `$modulos` array with `id, nombre, descripcion, ruta, color, roles_permitidos`
-
-## Auditoría (`TAuditoriaGeneral`)
-
-Columnas: `idAuditoria, TablaNombre, RegistroId, Accion (I/U), Campo, ValorAnterior, ValorNuevo, usuarioA, fechaHoraA, direccionIP, Detalles`
-
-Trait signature: `registrarAuditoria(string $tablaNombre, int $registroId, string $accion, ?string $campo, ?string $valorAnterior, ?string $valorNuevo, ?string $detalles)`
-
-| Acción | Campo/ValorNuevo |
-|---|---|
-| Crear (I) | `campo=null, valorAnterior=null, valorNuevo=val1\|val2\|...` |
-| Actualizar (U) | `campo=c1\|c2, valorAnterior=ant1\|ant2, valorNuevo=nue1\|nue2` |
-| Soft delete (U) | `campo=estadoA, valorAnterior=1, valorNuevo=0` |
-| Reactivar (U) | `campo=estadoA, valorAnterior=0, valorNuevo=1` |
-
-Agrupar múltiples campos modificados en **1 sola fila** separados por `|`.
-
-## Available global components
-
-| Component | Location | Usage |
-|---|---|---|
-| `AppHeader` | `components/AppHeader.vue` | Rendered by `App.vue`. Nav menu, role badge, logout confirmation, change password modal |
-| `CambiarContrasenaModal` | `components/CambiarContrasenaModal.vue` | Import with `v-if`, emits `@close` |
-| `ConfirmarCerrarSesion` | `components/ConfirmarCerrarSesion.vue` | Emits `@confirmar` and `@cancelar` |
-| `ProgramacionModal` | `views/usuarios/ProgramacionModal.vue` | Weekly schedule grid Lun–Sáb. Emits `@cerrar` and `@guardado` |
-
 ## Conventions
 
 - **Indentation:** PHP = 4 spaces, JS/Vue = 2 spaces
 - **Line endings:** LF, UTF-8, trailing whitespace trimmed, final newline
-- **Node engine:** `^22.18.0 \|\| >=24.12.0`
+- **Node engine:** `^22.18.0 || >=24.12.0`
 - **DB tables:** Always prefixed `T` (e.g., `TUsuarios`, `TEmpleados`)
 - **API response format:** Wrap collections in singular keys: `{ "usuarios": [...] }`
 - **Global styles:** Put in `App.vue` `<style>` (NOT scoped). `body { font: Inter; background: #F5F4F0; }`

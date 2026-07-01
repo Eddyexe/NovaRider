@@ -29,14 +29,11 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       await api.get('/sanctum/csrf-cookie')
-
       const response = await api.post('/login', { username, password })
-
       user.value = response.data.user
       return response.data
     } catch (err) {
-      const message =
-        err.response?.data?.message || 'Error al iniciar sesión'
+      const message = err.response?.data?.message || 'Error al iniciar sesión'
       error.value = message
       throw new Error(message, { cause: err })
     } finally {
@@ -61,7 +58,6 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = null
     }
   }
-
   async function cambiarContrasena(passwordActual, nuevaPassword) {
     await api.put('/cambiar-contrasena', {
       password_actual: passwordActual,

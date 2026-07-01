@@ -53,6 +53,16 @@ const soloNumeros = (e) => {
   }
 }
 
+const validarPrimerDigitoTelefono = (e) => {
+  const input = e.target
+  if (input.value.length === 0 && !/^[67]$/.test(e.key)) {
+    e.preventDefault()
+  }
+  if (!/^\d$/.test(e.key)) {
+    e.preventDefault()
+  }
+}
+
 const soloLetras = (e) => {
   if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]$/.test(e.key)) {
     e.preventDefault()
@@ -96,8 +106,12 @@ const validarCampo = (campo, valor) => {
       }
       break
     case 'telefono':
-      if (valor && !/^\d{8}$/.test(valor)) {
-        errores.value.telefono = 'El teléfono debe tener exactamente 8 dígitos'
+      if (valor) {
+        if (!/^[67]\d{7}$/.test(valor)) {
+          errores.value.telefono = 'El teléfono debe empezar con 6 o 7 y tener 8 dígitos'
+        } else {
+          errores.value.telefono = ''
+        }
       } else {
         errores.value.telefono = ''
       }
@@ -245,7 +259,7 @@ async function guardar() {
           </div>
           <div class="campo" :class="{ 'has-error': errores.telefono }">
             <label for="telefono">Teléfono</label>
-            <input id="telefono" v-model="form.telefono" type="text" @keypress="soloNumeros" maxlength="8" />
+            <input id="telefono" v-model="form.telefono" type="text" @keypress="validarPrimerDigitoTelefono" maxlength="8" />
             <p v-if="errores.telefono" class="field-error">{{ errores.telefono }}</p>
           </div>
           <div class="campo" :class="{ 'has-error': errores.nit }">

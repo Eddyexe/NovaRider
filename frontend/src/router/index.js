@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,7 +37,7 @@ const router = createRouter({
       path: '/motocicletas',
       name: 'motocicletas',
       component: () => import('@/views/motocicletas/MotocicletasView.vue'),
-      meta: { requiresAuth: true, roles: [1, 3] },
+      meta: { requiresAuth: true, roles: [1, 3, 4] },
     },
     {
       path: '/compras',
@@ -56,7 +55,7 @@ const router = createRouter({
       path: '/inventario',
       name: 'inventario',
       component: () => import('@/views/inventario/InventarioView.vue'),
-      meta: { requiresAuth: true, roles: [1, 2] },
+      meta: { requiresAuth: true, roles: [1, 2, 5] },
     },
     {
       path: '/horarios',
@@ -75,21 +74,23 @@ const router = createRouter({
       name: 'acceso-denegado',
       component: () => import('@/views/AccesoDenegadoView.vue'),
     },
-    /* =========================================================================
-       NUEVA RUTA QUIRÚRGICA: MÓDULO DE TALLER Y REPARACIONES
-       ========================================================================= */
     {
       path: '/taller',
       name: 'taller',
-      // Apunta directo a la carpeta aislada que creaste en el Paso 1
       component: () => import('@/views/taller/TallerDashboard.vue'),
-      // Requiere sesión activa y permite acceso a los roles autorizados (Ej: Admin = 1, Mecánicos = 3)
-      meta: { requiresAuth: true, roles: [1, 3] }, 
+      meta: { requiresAuth: true, roles: [1, 3] },
+    },
+    {
+      path: '/taller/equipamiento',
+      name: 'taller-equipamiento',
+      component: () => import('@/views/equipamiento/EquipamientoView.vue'),
+      meta: { requiresAuth: true, roles: [1, 2, 5] },
     },
   ],
 })
 
 router.beforeEach(async (to) => {
+  const { useAuthStore } = await import('@/stores/auth')
   const auth = useAuthStore()
 
   if (!auth.user) {

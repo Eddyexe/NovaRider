@@ -32,7 +32,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/cambiar-contrasena', [AuthController::class, 'cambiarContrasena']);
 
-    // --- Grupo Exclusivo para Administrador (Rol 1) ---
     Route::middleware('role:1')->group(function () {
         Route::get('/roles', [UsuarioController::class, 'roles']);
         Route::get('/usuarios', [UsuarioController::class, 'index']);
@@ -43,7 +42,6 @@ Route::middleware('auth')->group(function () {
         Route::put('/usuarios/{id}/reactivar', [UsuarioController::class, 'reactivar']);
         Route::get('/usuarios/reporte/pdf', [UsuarioController::class, 'reportePdf']);
 
-        // ... Rutas de proveedores, compras, turnos, planillas y reportes se mantienen idénticas ...
         Route::get('/proveedores', [ProveedorController::class, 'index']);
         Route::post('/proveedores', [ProveedorController::class, 'store']);
         Route::get('/proveedores/{id}', [ProveedorController::class, 'show']);
@@ -129,8 +127,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/reservas/{id}/registrar-envio', [ReservaController::class, 'registrarEnvio']);
     });
 
-    // --- Grupo Operativo de Taller (Roles 1, 3) ---
-    Route::middleware('role:1,3')->group(function () {
+    // --- Grupo Operativo de Taller (Roles 1, 3, 4) ---
+    Route::middleware('role:1,3,4')->group(function () {
         Route::get('/motocicletas', [MotocicletaController::class, 'index']);
         Route::post('/motocicletas', [MotocicletaController::class, 'store']);
         Route::get('/motocicletas/{id}', [MotocicletaController::class, 'show']);
@@ -139,21 +137,22 @@ Route::middleware('auth')->group(function () {
         Route::put('/motocicletas/{id}/reactivar', [MotocicletaController::class, 'reactivar']);
         Route::get('/motocicletas/{id}/historial', [MotocicletaController::class, 'historial']);
 
-        Route::get('/mecanicos', [UsuarioController::class, 'obtenerMecanicos']); 
+        Route::get('/mecanicos', [UsuarioController::class, 'obtenerMecanicos']);
 
         Route::get('/programaciones', [ProgramacionController::class, 'index']);
         Route::post('/programaciones', [ProgramacionController::class, 'store']);
         Route::get('/programaciones/global', [ProgramacionController::class, 'global']);
 
-        // === 🖨️ RUTAS DE ÓRDENES (REORDENADAS CORRECTAMENTE) ===
-        
-        // 1. Primero las rutas estáticas específicas (¡Crucial para evitar el 404!)
+        Route::get('/productos', function () {
+            $productos = Producto::where('estadoA', true)->orderBy('nombre')->get(['id_producto', 'nombre', 'stock_disponible']);
+            return response()->json(['productos' => $productos]);
+        });
+
+        // === Rutas de Órdenes ===
         Route::get('/ordenes/reporte/pdf', [OrdenController::class, 'reportePdf']);
         Route::post('/ordenes/guardar-verificacion', [OrdenController::class, 'guardarListaVerificacion']);
         Route::get('/ordenes', [OrdenController::class, 'index']);
         Route::post('/ordenes', [OrdenController::class, 'store']);
-
-        // 2. Al final las rutas con parámetros dinámicos {id}
         Route::put('/ordenes/{id}', [OrdenController::class, 'update']);
         Route::delete('/ordenes/{id}', [OrdenController::class, 'destroy']);
         Route::put('/ordenes/{id}/cambiar-estado', [OrdenController::class, 'cambiarEstado']);
